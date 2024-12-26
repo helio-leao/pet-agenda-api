@@ -1,1 +1,8 @@
-GET http://localhost:4000
+POST http://localhost:3000/users
+Content-Type: application/json
+
+{
+  "name": "testName",
+  "username": "usernameTest",
+  "email": "email"
+}
