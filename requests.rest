@@ -6,3 +6,7 @@ Content-Type: application/json
   "username": "usernameTest",
   "email": "email"
 }
+
+###
+
+GET http://localhost:3000/users/676de40a3612bfbde406d471
