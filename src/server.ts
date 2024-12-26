@@ -2,6 +2,7 @@ import express from "express";
 import usersRouter from "./routes/users";
 import petsRouter from "./routes/pets";
 import mongoose from "mongoose";
+import cors from "cors";
 
 const PORT = process.env.PORT || 3000;
 
@@ -12,6 +13,7 @@ db.once("open", () => console.log("Connected to database"));
 
 const app = express();
 app.use(express.json());
+app.use(cors());
 app.use("/users", usersRouter);
 app.use("/pets", petsRouter);
 
