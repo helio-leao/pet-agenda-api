@@ -6,7 +6,7 @@ export interface IPet {
   race: string;
   birthday: Date;
   picture: {
-    data: Buffer;
+    buffer: Buffer;
     contentType: string;
   };
   user: Types.ObjectId;

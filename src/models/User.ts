@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 export interface IUser {
   name: string;
   username: string;
+  password: string;
   email: string;
   picture: {
     buffer: Buffer;
@@ -16,6 +17,10 @@ const userSchema = new mongoose.Schema<IUser>({
     required: true,
   },
   username: {
+    type: String,
+    required: true,
+  },
+  password: {
     type: String,
     required: true,
   },
