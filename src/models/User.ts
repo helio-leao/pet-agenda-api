@@ -9,29 +9,41 @@ export interface IUser {
     buffer: Buffer;
     contentType: string;
   };
+  verified: boolean;
 }
 
-const userSchema = new mongoose.Schema<IUser>({
-  name: {
-    type: String,
-    required: true,
+const userSchema = new mongoose.Schema<IUser>(
+  {
+    name: {
+      type: String,
+      required: true,
+    },
+    username: {
+      type: String,
+      required: true,
+      unique: true,
+    },
+    password: {
+      type: String,
+      required: true,
+    },
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+    },
+    picture: {
+      buffer: Buffer,
+      contentType: String,
+    },
+    verified: {
+      type: Boolean,
+      default: false,
+    },
   },
-  username: {
-    type: String,
-    required: true,
-  },
-  password: {
-    type: String,
-    required: true,
-  },
-  email: {
-    type: String,
-    required: true,
-  },
-  picture: {
-    buffer: Buffer,
-    contentType: String,
-  },
-});
+  {
+    timestamps: true,
+  }
+);
 
 export default mongoose.model<IUser>("User", userSchema);

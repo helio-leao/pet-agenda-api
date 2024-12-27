@@ -4,7 +4,7 @@ export interface IPet {
   name: string;
   species: string;
   race: string;
-  birthday: Date;
+  birthdate: Date;
   picture: {
     buffer: Buffer;
     contentType: string;
@@ -12,32 +12,37 @@ export interface IPet {
   user: Types.ObjectId;
 }
 
-const petSchema = new mongoose.Schema<IPet>({
-  name: {
-    type: String,
-    required: true,
+const petSchema = new mongoose.Schema<IPet>(
+  {
+    name: {
+      type: String,
+      required: true,
+    },
+    species: {
+      type: String,
+      required: true,
+    },
+    race: {
+      type: String,
+      required: true,
+    },
+    birthdate: {
+      type: Date,
+      required: true,
+    },
+    picture: {
+      data: Buffer,
+      contentType: String,
+    },
+    user: {
+      type: mongoose.SchemaTypes.ObjectId,
+      ref: "User",
+      required: true,
+    },
   },
-  species: {
-    type: String,
-    required: true,
-  },
-  race: {
-    type: String,
-    required: true,
-  },
-  birthday: {
-    type: Date,
-    required: true,
-  },
-  picture: {
-    data: Buffer,
-    contentType: String,
-  },
-  user: {
-    type: mongoose.SchemaTypes.ObjectId,
-    ref: "User",
-    required: true,
-  },
-});
+  {
+    timestamps: true,
+  }
+);
 
 export default mongoose.model<IPet>("Pet", petSchema);
