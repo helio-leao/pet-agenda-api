@@ -5,7 +5,7 @@ export interface IUser {
   username: string;
   email: string;
   picture: {
-    data: Buffer;
+    buffer: Buffer;
     contentType: string;
   };
 }
@@ -24,7 +24,7 @@ const userSchema = new mongoose.Schema<IUser>({
     required: true,
   },
   picture: {
-    data: Buffer,
+    buffer: Buffer,
     contentType: String,
   },
 });

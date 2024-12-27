@@ -41,7 +41,7 @@ router.post("/:id/picture", upload.single("picture"), async (req, res) => {
       return;
     }
 
-    user.picture.data = file.buffer;
+    user.picture.buffer = file.buffer;
     user.picture.contentType = file.mimetype;
     const updated = await user.save();
     res.status(200).json(updated);
