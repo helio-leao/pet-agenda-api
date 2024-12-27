@@ -9,6 +9,29 @@ const upload = multer({ storage });
 
 const router = Router();
 
+router.post("/login", async (req, res) => {
+  const { username, password } = req.body;
+
+  try {
+    const user = await User.findOne({ username });
+
+    if (!user) {
+      res.status(404).json({ error: "User not found" });
+      return;
+    }
+
+    if (password !== user.password) {
+      res.status(401).json({ error: "Wrong password" });
+      return;
+    }
+
+    res.json(user);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
 router.post("/", async (req, res) => {
   const { name, username, password, email } = req.body;
 
