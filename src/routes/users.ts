@@ -25,7 +25,7 @@ router.post("/login", async (req, res) => {
       return;
     }
 
-    res.json(user);
+    res.json(transformUserPicture(user));
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Internal Server Error" });
