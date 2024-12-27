@@ -11,7 +11,6 @@ const upload = multer({ storage });
 const router = Router();
 
 router.get("/:id/pets", async (req, res) => {
-  console.log("pets");
   try {
     const pets = await Pet.find({ user: req.params.id });
     res.json(pets);
