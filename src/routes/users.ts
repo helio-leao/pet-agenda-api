@@ -13,7 +13,7 @@ router.post("/login", async (req, res) => {
   const { username, password } = req.body;
 
   try {
-    const user = await User.findOne({ username });
+    const user = await User.findOne({ username }).select("+password").exec();
 
     if (!user) {
       res.status(404).json({ error: "User not found" });
@@ -25,7 +25,10 @@ router.post("/login", async (req, res) => {
       return;
     }
 
-    res.json(transformUserPicture(user));
+    const fomattedObject = transformUserPicture(user);
+    delete (fomattedObject as any).password;
+
+    res.json(fomattedObject);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Internal Server Error" });
