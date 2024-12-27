@@ -10,4 +10,4 @@ Content-Type: application/json
 
 ###
 
-GET http://localhost:3000/users/676de40a3612bfbde406d471
+GET http://localhost:3000/users/676e9f8e3b7fba15dd349d7b/pets

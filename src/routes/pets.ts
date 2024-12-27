@@ -9,12 +9,12 @@ const upload = multer({ storage });
 const router = Router();
 
 router.post("/", async (req, res) => {
-  const { name, species, race, birthdate, user } = req.body;
+  const { name, type, breed, birthdate, user } = req.body;
 
   const newPet = new Pet({
     name,
-    species,
-    race,
+    type,
+    breed,
     birthdate,
     user,
   });

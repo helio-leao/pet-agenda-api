@@ -3,11 +3,23 @@ import User, { IUser } from "../models/User";
 import multer from "multer";
 import { Document } from "mongoose";
 import { Types } from "mongoose";
+import Pet from "../models/Pet";
 
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
 const router = Router();
+
+router.get("/:id/pets", async (req, res) => {
+  console.log("pets");
+  try {
+    const pets = await Pet.find({ user: req.params.id });
+    res.json(pets);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
 
 router.post("/login", async (req, res) => {
   const { username, password } = req.body;
