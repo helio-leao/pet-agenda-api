@@ -3,7 +3,7 @@ import User, { IUser } from "../models/User";
 import multer from "multer";
 import { Document } from "mongoose";
 import { Types } from "mongoose";
-import Pet from "../models/Pet";
+import Pet, { IPet } from "../models/Pet";
 
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
@@ -13,7 +13,7 @@ const router = Router();
 router.get("/:id/pets", async (req, res) => {
   try {
     const pets = await Pet.find({ user: req.params.id });
-    res.json(pets);
+    res.json(pets.map(transformPetPicture));
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Internal Server Error" });
@@ -114,6 +114,20 @@ function transformUserPicture(
     ...user.toObject(),
     picture: user.picture
       ? `data:${user.picture.contentType};base64,${user.picture.buffer.toString(
+          "base64"
+        )}`
+      : null,
+  };
+}
+
+function transformPetPicture(
+  pet: Document<unknown, {}, IPet> &
+    IPet & { _id: Types.ObjectId } & { __v: number }
+) {
+  return {
+    ...pet.toObject(),
+    picture: pet.picture
+      ? `data:${pet.picture.contentType};base64,${pet.picture.buffer.toString(
           "base64"
         )}`
       : null,

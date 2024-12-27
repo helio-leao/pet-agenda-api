@@ -31,7 +31,7 @@ const petSchema = new mongoose.Schema<IPet>(
       required: true,
     },
     picture: {
-      data: Buffer,
+      buffer: Buffer,
       contentType: String,
     },
     user: {
