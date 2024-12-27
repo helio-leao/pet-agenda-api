@@ -25,10 +25,10 @@ router.post("/login", async (req, res) => {
       return;
     }
 
-    const fomattedObject = transformUserPicture(user);
-    delete (fomattedObject as any).password;
+    const userObj = transformUserPicture(user);
+    delete (userObj as any).password;
 
-    res.json(fomattedObject);
+    res.json(userObj);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Internal Server Error" });
