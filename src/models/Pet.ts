@@ -2,8 +2,8 @@ import mongoose, { Types } from "mongoose";
 
 export interface IPet {
   name: string;
-  species: string;
-  race: string;
+  type: string;
+  breed: string;
   birthdate: Date;
   picture: {
     buffer: Buffer;
@@ -18,11 +18,11 @@ const petSchema = new mongoose.Schema<IPet>(
       type: String,
       required: true,
     },
-    species: {
+    type: {
       type: String,
       required: true,
     },
-    race: {
+    breed: {
       type: String,
       required: true,
     },
