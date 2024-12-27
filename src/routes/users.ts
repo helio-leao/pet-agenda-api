@@ -1,6 +1,8 @@
 import { Router } from "express";
-import User from "../models/User";
+import User, { IUser } from "../models/User";
 import multer from "multer";
+import { Document } from "mongoose";
+import { Types } from "mongoose";
 
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
@@ -8,11 +10,12 @@ const upload = multer({ storage });
 const router = Router();
 
 router.post("/", async (req, res) => {
-  const { name, username, email } = req.body;
+  const { name, username, password, email } = req.body;
 
   const newUser = new User({
     name,
     username,
+    password,
     email,
   });
 
@@ -43,7 +46,8 @@ router.post("/:id/picture", upload.single("picture"), async (req, res) => {
     user.picture.buffer = file.buffer;
     user.picture.contentType = file.mimetype;
     const updated = await user.save();
-    res.status(200).json(updated);
+
+    res.status(200).json(transformUserPicture(updated));
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Internal Server Error" });
@@ -58,20 +62,25 @@ router.get("/:id", async (req, res) => {
       res.status(404).json({ error: "User not found" });
       return;
     }
-
-    const userData = {
-      ...user.toObject(),
-      picture: user.picture
-        ? `data:${
-            user.picture.contentType
-          };base64,${user.picture.buffer.toString("base64")}`
-        : null,
-    };
-    res.json(userData);
+    res.json(transformUserPicture(user));
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
+
+function transformUserPicture(
+  user: Document<unknown, {}, IUser> &
+    IUser & { _id: Types.ObjectId } & { __v: number }
+) {
+  return {
+    ...user.toObject(),
+    picture: user.picture
+      ? `data:${user.picture.contentType};base64,${user.picture.buffer.toString(
+          "base64"
+        )}`
+      : null,
+  };
+}
 
 export default router;
