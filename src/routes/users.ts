@@ -40,7 +40,6 @@ router.post("/:id/picture", upload.single("picture"), async (req, res) => {
       res.status(404).json({ error: "User not found" });
       return;
     }
-
     user.picture.buffer = file.buffer;
     user.picture.contentType = file.mimetype;
     const updated = await user.save();
@@ -59,7 +58,16 @@ router.get("/:id", async (req, res) => {
       res.status(404).json({ error: "User not found" });
       return;
     }
-    res.json(user);
+
+    const userData = {
+      ...user.toObject(),
+      picture: user.picture
+        ? `data:${
+            user.picture.contentType
+          };base64,${user.picture.buffer.toString("base64")}`
+        : null,
+    };
+    res.json(userData);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Internal Server Error" });
