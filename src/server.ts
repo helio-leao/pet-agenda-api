@@ -1,6 +1,7 @@
 import express from "express";
 import usersRouter from "./routes/users";
 import petsRouter from "./routes/pets";
+import tasksRouter from "./routes/tasks";
 import mongoose from "mongoose";
 import cors from "cors";
 
@@ -16,5 +17,6 @@ app.use(express.json());
 app.use(cors());
 app.use("/users", usersRouter);
 app.use("/pets", petsRouter);
+app.use("/tasks", tasksRouter);
 
 app.listen(PORT, () => console.log(`Server listening on port ${PORT}...`));
