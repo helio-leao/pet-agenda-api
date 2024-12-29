@@ -2,11 +2,22 @@ import { Router } from "express";
 import Pet, { IPet } from "../models/Pet";
 import multer from "multer";
 import { Document, Types } from "mongoose";
+import Task from "../models/Task";
 
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
 const router = Router();
+
+router.get("/:id/tasks", async (req, res) => {
+  try {
+    const tasks = await Task.find({ pet: req.params.id });
+    res.json(tasks);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
 
 router.post("/", async (req, res) => {
   const { name, type, breed, birthdate, user } = req.body;

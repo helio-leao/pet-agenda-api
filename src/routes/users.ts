@@ -4,6 +4,7 @@ import multer from "multer";
 import { Document } from "mongoose";
 import { Types } from "mongoose";
 import Pet, { IPet } from "../models/Pet";
+import Task from "../models/Task";
 
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
@@ -14,6 +15,16 @@ router.get("/:id/pets", async (req, res) => {
   try {
     const pets = await Pet.find({ user: req.params.id });
     res.json(pets.map(transformPetPicture));
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+router.get("/:id/tasks", async (req, res) => {
+  try {
+    const tasks = await Task.find({ user: req.params.id });
+    res.json(tasks);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Internal Server Error" });
