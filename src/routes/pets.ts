@@ -39,6 +39,31 @@ router.post("/", async (req, res) => {
   }
 });
 
+router.get("/:id", async (req, res) => {
+  try {
+    const pet = await Pet.findById(req.params.id);
+
+    if (!pet) {
+      res.status(404).json({ error: "Pet not found" });
+      return;
+    }
+    res.json(transformPetPicture(pet));
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+router.get("/:id/tasks", async (req, res) => {
+  try {
+    const tasks = await Task.find({ pet: req.params.id });
+    res.json(tasks);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
 router.post("/:id/picture", upload.single("picture"), async (req, res) => {
   const { file } = req;
 
