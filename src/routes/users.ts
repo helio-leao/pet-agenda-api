@@ -23,7 +23,10 @@ router.get("/:id/pets", async (req, res) => {
 
 router.get("/:id/tasks", async (req, res) => {
   try {
-    const tasks = await Task.find({ user: req.params.id });
+    const tasks = await Task.find({ user: req.params.id }).populate({
+      path: "pet",
+      select: "name",
+    });
     res.json(tasks);
   } catch (error) {
     console.error(error);
