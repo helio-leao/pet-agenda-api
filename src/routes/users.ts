@@ -35,7 +35,8 @@ router.patch("/:id", async (req, res) => {
       user.password = password;
     }
 
-    res.json(transformUserPicture(user));
+    const updated = await user.save();
+    res.json(transformUserPicture(updated));
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Internal Server Error" });
