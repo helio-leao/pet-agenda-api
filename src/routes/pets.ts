@@ -39,6 +39,30 @@ router.post("/", async (req, res) => {
   }
 });
 
+router.patch("/:id", async (req, res) => {
+  const { name, type, breed, birthdate } = req.body;
+
+  try {
+    const pet = await Pet.findById(req.params.id);
+
+    if (!pet) {
+      res.status(404).json({ error: "Pet not found" });
+      return;
+    }
+
+    pet.name = name;
+    pet.type = type;
+    pet.breed = breed;
+    pet.birthdate = birthdate;
+
+    const updated = await pet.save();
+    res.json(updated);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
 router.get("/:id", async (req, res) => {
   try {
     const pet = await Pet.findById(req.params.id);
