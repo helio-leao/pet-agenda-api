@@ -170,14 +170,20 @@ function transformPetPicture(
   pet: Document<unknown, {}, IPet> &
     IPet & { _id: Types.ObjectId } & { __v: number }
 ) {
-  return {
-    ...pet.toObject(),
-    picture: pet.picture
-      ? `data:${pet.picture.contentType};base64,${pet.picture.buffer.toString(
-          "base64"
-        )}`
-      : null,
-  };
+  const petObj = pet.toObject();
+
+  if (petObj.picture) {
+    return {
+      ...petObj,
+      picture: pet.picture
+        ? `data:${pet.picture.contentType};base64,${pet.picture.buffer.toString(
+            "base64"
+          )}`
+        : null,
+    };
+  } else {
+    return petObj;
+  }
 }
 
 export default router;

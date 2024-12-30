@@ -3,6 +3,7 @@ import Pet, { IPet } from "../models/Pet";
 import multer from "multer";
 import { Document, Types } from "mongoose";
 import Task from "../models/Task";
+import { createPetSchema, updatePetSchema } from "../schemas/petSchema";
 
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
@@ -20,15 +21,20 @@ router.get("/:id/tasks", async (req, res) => {
 });
 
 router.post("/", async (req, res) => {
-  const { name, type, breed, birthdate, user } = req.body;
+  const validation = createPetSchema.safeParse(req.body);
+  if (!validation.success) {
+    res.status(400).json({
+      error: "Validation Error",
+      details: validation.error.errors.map((err) => ({
+        path: err.path.join("."),
+        message: err.message,
+      })),
+    });
+    return;
+  }
 
-  const newPet = new Pet({
-    name,
-    type,
-    breed,
-    birthdate,
-    user,
-  });
+  const { name, type, breed, birthdate, user } = req.body;
+  const newPet = new Pet({ name, type, breed, birthdate, user });
 
   try {
     await newPet.save();
@@ -40,7 +46,17 @@ router.post("/", async (req, res) => {
 });
 
 router.patch("/:id", async (req, res) => {
-  const { name, type, breed, birthdate } = req.body;
+  const validation = updatePetSchema.safeParse(req.body);
+  if (!validation.success) {
+    res.status(400).json({
+      error: "Validation Error",
+      details: validation.error.errors.map((err) => ({
+        path: err.path.join("."),
+        message: err.message,
+      })),
+    });
+    return;
+  }
 
   try {
     const pet = await Pet.findById(req.params.id);
@@ -50,13 +66,14 @@ router.patch("/:id", async (req, res) => {
       return;
     }
 
-    pet.name = name;
-    pet.type = type;
-    pet.breed = breed;
-    pet.birthdate = birthdate;
+    const { name, type, breed, birthdate } = req.body;
+    if (name != undefined) pet.name = name;
+    if (type != undefined) pet.type = type;
+    if (breed != undefined) pet.breed = breed;
+    if (birthdate != undefined) pet.birthdate = birthdate;
 
     const updated = await pet.save();
-    res.json(updated);
+    res.json(transformPetPicture(updated));
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Internal Server Error" });
@@ -118,14 +135,20 @@ function transformPetPicture(
   pet: Document<unknown, {}, IPet> &
     IPet & { _id: Types.ObjectId } & { __v: number }
 ) {
-  return {
-    ...pet.toObject(),
-    picture: pet.picture
-      ? `data:${pet.picture.contentType};base64,${pet.picture.buffer.toString(
-          "base64"
-        )}`
-      : null,
-  };
+  const petObj = pet.toObject();
+
+  if (petObj.picture) {
+    return {
+      ...petObj,
+      picture: pet.picture
+        ? `data:${pet.picture.contentType};base64,${pet.picture.buffer.toString(
+            "base64"
+          )}`
+        : null,
+    };
+  } else {
+    return petObj;
+  }
 }
 
 export default router;
