@@ -24,6 +24,30 @@ router.post("/", async (req, res) => {
   }
 });
 
+router.patch("/:id", async (req, res) => {
+  const { title, description, date, status, pet } = req.body;
+
+  try {
+    const task = await Task.findById(req.params.id);
+
+    if (!task) {
+      res.status(404).json({ error: "Task not found" });
+      return;
+    }
+    task.title = title;
+    task.description = description;
+    task.date = date;
+    task.status = status;
+    task.pet = pet;
+
+    const updated = await task.save();
+    res.json(updated);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
 router.get("/:id", async (req, res) => {
   try {
     const task = await Task.findById(req.params.id);
