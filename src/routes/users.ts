@@ -11,6 +11,37 @@ const upload = multer({ storage });
 
 const router = Router();
 
+router.patch("/:id", async (req, res) => {
+  const { name, username, password, email } = req.body;
+
+  try {
+    const user = await User.findById(req.params.id);
+
+    if (!user) {
+      res.status(404).json({ error: "User not found" });
+      return;
+    }
+
+    // if (username) {
+    //   user.username = username;
+    // }
+    // if (email) {
+    //   user.email = email;
+    // }
+    if (name) {
+      user.name = name;
+    }
+    if (password) {
+      user.password = password;
+    }
+
+    res.json(transformUserPicture(user));
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
 router.get("/:id/pets", async (req, res) => {
   try {
     const pets = await Pet.find({ user: req.params.id });
