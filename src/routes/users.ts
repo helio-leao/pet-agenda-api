@@ -5,6 +5,7 @@ import { Document } from "mongoose";
 import { Types } from "mongoose";
 import Pet, { IPet } from "../models/Pet";
 import Task from "../models/Task";
+import { createUserSchema, updateUserSchema } from "../schemas/userSchema";
 
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
@@ -12,7 +13,17 @@ const upload = multer({ storage });
 const router = Router();
 
 router.patch("/:id", async (req, res) => {
-  const { name, username, password, email } = req.body;
+  const validation = updateUserSchema.safeParse(req.body);
+  if (!validation.success) {
+    res.status(400).json({
+      error: "Validation Error",
+      details: validation.error.errors.map((err) => ({
+        path: err.path.join("."),
+        message: err.message,
+      })),
+    });
+    return;
+  }
 
   try {
     const user = await User.findById(req.params.id);
@@ -22,18 +33,11 @@ router.patch("/:id", async (req, res) => {
       return;
     }
 
-    // if (username) {
-    //   user.username = username;
-    // }
-    // if (email) {
-    //   user.email = email;
-    // }
-    if (name) {
-      user.name = name;
-    }
-    if (password) {
-      user.password = password;
-    }
+    const { name, password, username, email } = req.body;
+    if (name != undefined) user.name = name;
+    if (password != undefined) user.password = password;
+    // if (username != undefined) user.username = username;
+    // if (email != undefined) user.email = email;
 
     const updated = await user.save();
     res.json(transformUserPicture(updated));
@@ -93,14 +97,20 @@ router.post("/login", async (req, res) => {
 });
 
 router.post("/", async (req, res) => {
-  const { name, username, password, email } = req.body;
+  const validation = createUserSchema.safeParse(req.body);
+  if (!validation.success) {
+    res.status(400).json({
+      error: "Validation Error",
+      details: validation.error.errors.map((err) => ({
+        path: err.path.join("."),
+        message: err.message,
+      })),
+    });
+    return;
+  }
 
-  const newUser = new User({
-    name,
-    username,
-    password,
-    email,
-  });
+  const { name, username, password, email } = req.body;
+  const newUser = new User({ name, username, password, email });
 
   try {
     await newUser.save();
