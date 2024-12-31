@@ -1,19 +1,24 @@
 import { Router } from "express";
 import Task from "../models/Task";
+import { createTaskSchema, updateTaskSchema } from "../schemas/taskSchema";
 
 const router = Router();
 
 router.post("/", async (req, res) => {
-  const { title, description, date, status, user, pet } = req.body;
+  const validation = createTaskSchema.safeParse(req.body);
+  if (!validation.success) {
+    res.status(400).json({
+      error: "Validation Error",
+      details: validation.error.errors.map((err) => ({
+        path: err.path.join("."),
+        message: err.message,
+      })),
+    });
+    return;
+  }
 
-  const newTask = new Task({
-    title,
-    description,
-    date,
-    status,
-    user,
-    pet,
-  });
+  const { title, description, date, status, user, pet } = req.body;
+  const newTask = new Task({ title, description, date, status, user, pet });
 
   try {
     await newTask.save();
@@ -25,7 +30,17 @@ router.post("/", async (req, res) => {
 });
 
 router.patch("/:id", async (req, res) => {
-  const { title, description, date, status, pet } = req.body;
+  const validation = updateTaskSchema.safeParse(req.body);
+  if (!validation.success) {
+    res.status(400).json({
+      error: "Validation Error",
+      details: validation.error.errors.map((err) => ({
+        path: err.path.join("."),
+        message: err.message,
+      })),
+    });
+    return;
+  }
 
   try {
     const task = await Task.findById(req.params.id);
@@ -34,11 +49,13 @@ router.patch("/:id", async (req, res) => {
       res.status(404).json({ error: "Task not found" });
       return;
     }
-    task.title = title;
-    task.description = description;
-    task.date = date;
-    task.status = status;
-    task.pet = pet;
+
+    const { title, description, date, status, pet } = req.body;
+    if (title != undefined) task.title = title;
+    if (description != undefined) task.description = description;
+    if (date != undefined) task.date = date;
+    if (status != undefined) task.status = status;
+    if (pet != undefined) task.pet = pet;
 
     const updated = await task.save();
     res.json(updated);
