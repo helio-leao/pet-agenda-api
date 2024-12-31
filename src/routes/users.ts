@@ -156,14 +156,20 @@ function transformUserPicture(
   user: Document<unknown, {}, IUser> &
     IUser & { _id: Types.ObjectId } & { __v: number }
 ) {
-  return {
-    ...user.toObject(),
-    picture: user.picture
-      ? `data:${user.picture.contentType};base64,${user.picture.buffer.toString(
-          "base64"
-        )}`
-      : null,
-  };
+  const userObj = user.toObject();
+
+  if (userObj.picture) {
+    return {
+      ...userObj,
+      picture: user.picture
+        ? `data:${
+            user.picture.contentType
+          };base64,${user.picture.buffer.toString("base64")}`
+        : null,
+    };
+  } else {
+    return userObj;
+  }
 }
 
 function transformPetPicture(
