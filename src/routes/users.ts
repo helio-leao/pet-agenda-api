@@ -5,6 +5,7 @@ import Pet from "../models/Pet";
 import Task from "../models/Task";
 import { createUserSchema, updateUserSchema } from "../schemas/userSchema";
 import transformPicture from "../utils/transformPicture";
+import bcrypt from "bcrypt";
 
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
@@ -34,7 +35,7 @@ router.patch("/:id", async (req, res) => {
 
     const { name, password, username, email } = req.body;
     if (name != undefined) user.name = name;
-    if (password != undefined) user.password = password;
+    if (password != undefined) user.password = await bcrypt.hash(password, 10);
     // if (username != undefined) user.username = username;
     // if (email != undefined) user.email = email;
 
@@ -75,7 +76,10 @@ router.post("/login", async (req, res) => {
   try {
     const user = await User.findOne({ username }).select("+password").exec();
 
-    if (!user || password !== user.password) {
+    if (
+      user == null ||
+      (await bcrypt.compare(password, user.password)) === false
+    ) {
       res.status(401).json({ error: "Wrong username or password" });
       return;
     }
@@ -104,7 +108,12 @@ router.post("/", async (req, res) => {
   }
 
   const { name, username, password, email } = req.body;
-  const newUser = new User({ name, username, password, email });
+  const newUser = new User({
+    name,
+    username,
+    password: await bcrypt.hash(password, 10),
+    email,
+  });
 
   try {
     await newUser.save();
