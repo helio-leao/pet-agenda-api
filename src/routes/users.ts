@@ -75,13 +75,8 @@ router.post("/login", async (req, res) => {
   try {
     const user = await User.findOne({ username }).select("+password").exec();
 
-    if (!user) {
-      res.status(404).json({ error: "User not found" });
-      return;
-    }
-
-    if (password !== user.password) {
-      res.status(401).json({ error: "Wrong password" });
+    if (!user || password !== user.password) {
+      res.status(401).json({ error: "Wrong username or password" });
       return;
     }
 
