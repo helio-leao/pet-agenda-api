@@ -6,13 +6,21 @@ import Task from "../models/Task";
 import { createUserSchema, updateUserSchema } from "../schemas/userSchema";
 import transformPicture from "../utils/transformPicture";
 import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
+import authToken from "../middlewares/authToken";
 
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
 const router = Router();
 
-router.patch("/:id", async (req, res) => {
+const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET;
+
+router.patch("/:id", authToken, async (req, res) => {
+  if (req.user?._id !== req.params.id) {
+    res.status(403).json({ error: "You can only access your own data" });
+    return;
+  }
   const validation = updateUserSchema.safeParse(req.body);
   if (!validation.success) {
     res.status(400).json({
@@ -32,7 +40,6 @@ router.patch("/:id", async (req, res) => {
       res.status(404).json({ error: "User not found" });
       return;
     }
-
     const { name, password, username, email } = req.body;
     if (name != undefined) user.name = name;
     if (password != undefined) user.password = await bcrypt.hash(password, 10);
@@ -47,7 +54,11 @@ router.patch("/:id", async (req, res) => {
   }
 });
 
-router.get("/:id/pets", async (req, res) => {
+router.get("/:id/pets", authToken, async (req, res) => {
+  if (req.user?._id !== req.params.id) {
+    res.status(403).json({ error: "You can only access your own data" });
+    return;
+  }
   try {
     const pets = await Pet.find({ user: req.params.id });
     res.json(pets.map(transformPicture));
@@ -57,7 +68,11 @@ router.get("/:id/pets", async (req, res) => {
   }
 });
 
-router.get("/:id/tasks", async (req, res) => {
+router.get("/:id/tasks", authToken, async (req, res) => {
+  if (req.user?._id !== req.params.id) {
+    res.status(403).json({ error: "You can only access your own data" });
+    return;
+  }
   try {
     const tasks = await Task.find({ user: req.params.id }).populate({
       path: "pet",
@@ -84,10 +99,13 @@ router.post("/login", async (req, res) => {
       return;
     }
 
-    const userObj = transformPicture(user);
-    delete (userObj as any).password;
+    const payload = { _id: user._id };
 
-    res.json(userObj);
+    const accessToken = jwt.sign({ user: payload }, ACCESS_TOKEN_SECRET!, {
+      expiresIn: "10m",
+    });
+
+    res.json({ user: payload, accessToken });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Internal Server Error" });
@@ -114,7 +132,6 @@ router.post("/signup", async (req, res) => {
     password: await bcrypt.hash(password, 10),
     email,
   });
-
   try {
     await newUser.save();
     res.status(201).json(newUser);
@@ -124,33 +141,45 @@ router.post("/signup", async (req, res) => {
   }
 });
 
-router.post("/:id/picture", upload.single("picture"), async (req, res) => {
-  const { file } = req;
-
-  if (!file) {
-    res.status(400).json({ error: "No file provided" });
-    return;
-  }
-
-  try {
-    const user = await User.findById(req.params.id);
-
-    if (!user) {
-      res.status(404).json({ error: "User not found" });
+router.post(
+  "/:id/picture",
+  authToken,
+  upload.single("picture"),
+  async (req, res) => {
+    if (req.user?._id !== req.params.id) {
+      res.status(403).json({ error: "You can only access your own data" });
       return;
     }
-    user.picture.buffer = file.buffer;
-    user.picture.contentType = file.mimetype;
-    const updated = await user.save();
+    const { file } = req;
 
-    res.json(transformPicture(updated));
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Internal Server Error" });
+    if (!file) {
+      res.status(400).json({ error: "No file provided" });
+      return;
+    }
+    try {
+      const user = await User.findById(req.params.id);
+
+      if (!user) {
+        res.status(404).json({ error: "User not found" });
+        return;
+      }
+      user.picture.buffer = file.buffer;
+      user.picture.contentType = file.mimetype;
+      const updated = await user.save();
+
+      res.json(transformPicture(updated));
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: "Internal Server Error" });
+    }
   }
-});
+);
 
-router.get("/:id", async (req, res) => {
+router.get("/:id", authToken, async (req, res) => {
+  if (req.user?._id !== req.params.id) {
+    res.status(403).json({ error: "You can only access your own data" });
+    return;
+  }
   try {
     const user = await User.findById(req.params.id);
 
