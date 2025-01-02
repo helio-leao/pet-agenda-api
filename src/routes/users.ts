@@ -94,7 +94,7 @@ router.post("/login", async (req, res) => {
   }
 });
 
-router.post("/", async (req, res) => {
+router.post("/signup", async (req, res) => {
   const validation = createUserSchema.safeParse(req.body);
   if (!validation.success) {
     res.status(400).json({
