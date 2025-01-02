@@ -1,9 +1,9 @@
 import { Router } from "express";
-import Pet, { IPet } from "../models/Pet";
+import Pet from "../models/Pet";
 import multer from "multer";
-import { Document, Types } from "mongoose";
 import Task from "../models/Task";
 import { createPetSchema, updatePetSchema } from "../schemas/petSchema";
+import transformPicture from "../utils/transformPicture";
 
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
@@ -73,7 +73,7 @@ router.patch("/:id", async (req, res) => {
     if (birthdate != undefined) pet.birthdate = birthdate;
 
     const updated = await pet.save();
-    res.json(transformPetPicture(updated));
+    res.json(transformPicture(updated));
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Internal Server Error" });
@@ -88,7 +88,7 @@ router.get("/:id", async (req, res) => {
       res.status(404).json({ error: "Pet not found" });
       return;
     }
-    res.json(transformPetPicture(pet));
+    res.json(transformPicture(pet));
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Internal Server Error" });
@@ -124,31 +124,11 @@ router.post("/:id/picture", upload.single("picture"), async (req, res) => {
     pet.picture.contentType = file.mimetype;
     const updated = await pet.save();
 
-    res.status(200).json(transformPetPicture(updated));
+    res.json(transformPicture(updated));
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
-
-function transformPetPicture(
-  pet: Document<unknown, {}, IPet> &
-    IPet & { _id: Types.ObjectId } & { __v: number }
-) {
-  const petObj = pet.toObject();
-
-  if (petObj.picture) {
-    return {
-      ...petObj,
-      picture: pet.picture
-        ? `data:${pet.picture.contentType};base64,${pet.picture.buffer.toString(
-            "base64"
-          )}`
-        : null,
-    };
-  } else {
-    return petObj;
-  }
-}
 
 export default router;

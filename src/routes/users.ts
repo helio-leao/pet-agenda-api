@@ -1,11 +1,10 @@
 import { Router } from "express";
-import User, { IUser } from "../models/User";
+import User from "../models/User";
 import multer from "multer";
-import { Document } from "mongoose";
-import { Types } from "mongoose";
-import Pet, { IPet } from "../models/Pet";
+import Pet from "../models/Pet";
 import Task from "../models/Task";
 import { createUserSchema, updateUserSchema } from "../schemas/userSchema";
+import transformPicture from "../utils/transformPicture";
 
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
@@ -40,7 +39,7 @@ router.patch("/:id", async (req, res) => {
     // if (email != undefined) user.email = email;
 
     const updated = await user.save();
-    res.json(transformUserPicture(updated));
+    res.json(transformPicture(updated));
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Internal Server Error" });
@@ -50,7 +49,7 @@ router.patch("/:id", async (req, res) => {
 router.get("/:id/pets", async (req, res) => {
   try {
     const pets = await Pet.find({ user: req.params.id });
-    res.json(pets.map(transformPetPicture));
+    res.json(pets.map(transformPicture));
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Internal Server Error" });
@@ -86,7 +85,7 @@ router.post("/login", async (req, res) => {
       return;
     }
 
-    const userObj = transformUserPicture(user);
+    const userObj = transformPicture(user);
     delete (userObj as any).password;
 
     res.json(userObj);
@@ -140,7 +139,7 @@ router.post("/:id/picture", upload.single("picture"), async (req, res) => {
     user.picture.contentType = file.mimetype;
     const updated = await user.save();
 
-    res.status(200).json(transformUserPicture(updated));
+    res.json(transformPicture(updated));
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Internal Server Error" });
@@ -155,51 +154,11 @@ router.get("/:id", async (req, res) => {
       res.status(404).json({ error: "User not found" });
       return;
     }
-    res.json(transformUserPicture(user));
+    res.json(transformPicture(user));
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
-
-function transformUserPicture(
-  user: Document<unknown, {}, IUser> &
-    IUser & { _id: Types.ObjectId } & { __v: number }
-) {
-  const userObj = user.toObject();
-
-  if (userObj.picture) {
-    return {
-      ...userObj,
-      picture: user.picture
-        ? `data:${
-            user.picture.contentType
-          };base64,${user.picture.buffer.toString("base64")}`
-        : null,
-    };
-  } else {
-    return userObj;
-  }
-}
-
-function transformPetPicture(
-  pet: Document<unknown, {}, IPet> &
-    IPet & { _id: Types.ObjectId } & { __v: number }
-) {
-  const petObj = pet.toObject();
-
-  if (petObj.picture) {
-    return {
-      ...petObj,
-      picture: pet.picture
-        ? `data:${pet.picture.contentType};base64,${pet.picture.buffer.toString(
-            "base64"
-          )}`
-        : null,
-    };
-  } else {
-    return petObj;
-  }
-}
 
 export default router;
