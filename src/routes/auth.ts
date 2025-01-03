@@ -80,7 +80,7 @@ router.delete("/logout", async (req, res) => {
       res.status(404).json({ error: "Token not found" });
       return;
     }
-    foundToken.deleteOne();
+    await foundToken.deleteOne();
     res.status(204).json({ message: "Logged out successfully" });
   } catch (error) {
     console.error(error);
