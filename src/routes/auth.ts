@@ -24,6 +24,11 @@ router.post("/login", async (req, res) => {
       return;
     }
 
+    if (!user.verified) {
+      res.status(401).json({ error: "User not verified" });
+      return;
+    }
+
     const payload = { _id: user._id };
 
     const accessToken = jwt.sign({ user: payload }, ACCESS_TOKEN_SECRET!, {
