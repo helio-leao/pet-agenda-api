@@ -4,18 +4,15 @@ import User from "../models/User";
 import multer from "multer";
 import Pet from "../models/Pet";
 import Task from "../models/Task";
-import { createUserSchema, updateUserSchema } from "../schemas/userSchema";
+import { updateUserSchema } from "../schemas/userSchema";
 import transformPicture from "../utils/transformPicture";
 import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
 import authToken from "../middlewares/authToken";
 
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
 const router = Router();
-
-const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET;
 
 router.patch("/:id", authToken, checkOwnership, async (req, res) => {
   const validation = updateUserSchema.safeParse(req.body);
@@ -68,62 +65,6 @@ router.get("/:id/tasks", authToken, checkOwnership, async (req, res) => {
       select: "name",
     });
     res.json(tasks);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Internal Server Error" });
-  }
-});
-
-router.post("/login", async (req, res) => {
-  const { username, password } = req.body;
-
-  try {
-    const user = await User.findOne({ username }).select("+password").exec();
-
-    if (
-      user == null ||
-      (await bcrypt.compare(password, user.password)) === false
-    ) {
-      res.status(401).json({ error: "Wrong username or password" });
-      return;
-    }
-
-    const payload = { _id: user._id };
-
-    const accessToken = jwt.sign({ user: payload }, ACCESS_TOKEN_SECRET!, {
-      expiresIn: "10m",
-    });
-
-    res.json({ user: payload, accessToken });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Internal Server Error" });
-  }
-});
-
-router.post("/signup", async (req, res) => {
-  const validation = createUserSchema.safeParse(req.body);
-  if (!validation.success) {
-    res.status(400).json({
-      error: "Validation Error",
-      details: validation.error.errors.map((err) => ({
-        path: err.path.join("."),
-        message: err.message,
-      })),
-    });
-    return;
-  }
-
-  const { name, username, password, email } = req.body;
-  const newUser = new User({
-    name,
-    username,
-    password: await bcrypt.hash(password, 10),
-    email,
-  });
-  try {
-    await newUser.save();
-    res.status(201).json(newUser);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Internal Server Error" });
