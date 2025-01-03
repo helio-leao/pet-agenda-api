@@ -4,13 +4,14 @@ import multer from "multer";
 import Task from "../models/Task";
 import { createPetSchema, updatePetSchema } from "../schemas/petSchema";
 import transformPicture from "../utils/transformPicture";
+import authToken from "../middlewares/authToken";
 
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
 const router = Router();
 
-router.get("/:id/tasks", async (req, res) => {
+router.get("/:id/tasks", authToken, async (req, res) => {
   try {
     const tasks = await Task.find({ pet: req.params.id });
     res.json(tasks);
@@ -20,7 +21,7 @@ router.get("/:id/tasks", async (req, res) => {
   }
 });
 
-router.post("/", async (req, res) => {
+router.post("/", authToken, async (req, res) => {
   const validation = createPetSchema.safeParse(req.body);
   if (!validation.success) {
     res.status(400).json({
@@ -45,7 +46,7 @@ router.post("/", async (req, res) => {
   }
 });
 
-router.patch("/:id", async (req, res) => {
+router.patch("/:id", authToken, async (req, res) => {
   const validation = updatePetSchema.safeParse(req.body);
   if (!validation.success) {
     res.status(400).json({
@@ -80,7 +81,7 @@ router.patch("/:id", async (req, res) => {
   }
 });
 
-router.get("/:id", async (req, res) => {
+router.get("/:id", authToken, async (req, res) => {
   try {
     const pet = await Pet.findById(req.params.id);
 
@@ -95,7 +96,7 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-router.get("/:id/tasks", async (req, res) => {
+router.get("/:id/tasks", authToken, async (req, res) => {
   try {
     const tasks = await Task.find({ pet: req.params.id });
     res.json(tasks);
@@ -105,30 +106,35 @@ router.get("/:id/tasks", async (req, res) => {
   }
 });
 
-router.post("/:id/picture", upload.single("picture"), async (req, res) => {
-  const { file } = req;
+router.post(
+  "/:id/picture",
+  authToken,
+  upload.single("picture"),
+  async (req, res) => {
+    const { file } = req;
 
-  if (!file) {
-    res.status(400).json({ error: "No file provided" });
-    return;
-  }
-
-  try {
-    const pet = await Pet.findById(req.params.id);
-
-    if (!pet) {
-      res.status(404).json({ error: "Pet not found" });
+    if (!file) {
+      res.status(400).json({ error: "No file provided" });
       return;
     }
-    pet.picture.buffer = file.buffer;
-    pet.picture.contentType = file.mimetype;
-    const updated = await pet.save();
 
-    res.json(transformPicture(updated));
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Internal Server Error" });
+    try {
+      const pet = await Pet.findById(req.params.id);
+
+      if (!pet) {
+        res.status(404).json({ error: "Pet not found" });
+        return;
+      }
+      pet.picture.buffer = file.buffer;
+      pet.picture.contentType = file.mimetype;
+      const updated = await pet.save();
+
+      res.json(transformPicture(updated));
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: "Internal Server Error" });
+    }
   }
-});
+);
 
 export default router;

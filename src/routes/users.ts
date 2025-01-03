@@ -8,6 +8,7 @@ import transformPicture from "../utils/transformPicture";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import authToken from "../middlewares/authToken";
+import checkOwnership from "../middlewares/checkOwnership";
 
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
@@ -16,11 +17,7 @@ const router = Router();
 
 const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET;
 
-router.patch("/:id", authToken, async (req, res) => {
-  if (req.user?._id !== req.params.id) {
-    res.status(403).json({ error: "You can only access your own data" });
-    return;
-  }
+router.patch("/:id", authToken, checkOwnership, async (req, res) => {
   const validation = updateUserSchema.safeParse(req.body);
   if (!validation.success) {
     res.status(400).json({
@@ -54,11 +51,7 @@ router.patch("/:id", authToken, async (req, res) => {
   }
 });
 
-router.get("/:id/pets", authToken, async (req, res) => {
-  if (req.user?._id !== req.params.id) {
-    res.status(403).json({ error: "You can only access your own data" });
-    return;
-  }
+router.get("/:id/pets", authToken, checkOwnership, async (req, res) => {
   try {
     const pets = await Pet.find({ user: req.params.id });
     res.json(pets.map(transformPicture));
@@ -68,11 +61,7 @@ router.get("/:id/pets", authToken, async (req, res) => {
   }
 });
 
-router.get("/:id/tasks", authToken, async (req, res) => {
-  if (req.user?._id !== req.params.id) {
-    res.status(403).json({ error: "You can only access your own data" });
-    return;
-  }
+router.get("/:id/tasks", authToken, checkOwnership, async (req, res) => {
   try {
     const tasks = await Task.find({ user: req.params.id }).populate({
       path: "pet",
@@ -144,12 +133,9 @@ router.post("/signup", async (req, res) => {
 router.post(
   "/:id/picture",
   authToken,
+  checkOwnership,
   upload.single("picture"),
   async (req, res) => {
-    if (req.user?._id !== req.params.id) {
-      res.status(403).json({ error: "You can only access your own data" });
-      return;
-    }
     const { file } = req;
 
     if (!file) {
@@ -175,11 +161,7 @@ router.post(
   }
 );
 
-router.get("/:id", authToken, async (req, res) => {
-  if (req.user?._id !== req.params.id) {
-    res.status(403).json({ error: "You can only access your own data" });
-    return;
-  }
+router.get("/:id", authToken, checkOwnership, async (req, res) => {
   try {
     const user = await User.findById(req.params.id);
 

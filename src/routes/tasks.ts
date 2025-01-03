@@ -1,10 +1,11 @@
 import { Router } from "express";
 import Task from "../models/Task";
 import { createTaskSchema, updateTaskSchema } from "../schemas/taskSchema";
+import authToken from "../middlewares/authToken";
 
 const router = Router();
 
-router.post("/", async (req, res) => {
+router.post("/", authToken, async (req, res) => {
   const validation = createTaskSchema.safeParse(req.body);
   if (!validation.success) {
     res.status(400).json({
@@ -29,7 +30,7 @@ router.post("/", async (req, res) => {
   }
 });
 
-router.patch("/:id", async (req, res) => {
+router.patch("/:id", authToken, async (req, res) => {
   const validation = updateTaskSchema.safeParse(req.body);
   if (!validation.success) {
     res.status(400).json({
@@ -65,7 +66,7 @@ router.patch("/:id", async (req, res) => {
   }
 });
 
-router.get("/:id", async (req, res) => {
+router.get("/:id", authToken, async (req, res) => {
   try {
     const task = await Task.findById(req.params.id);
 
