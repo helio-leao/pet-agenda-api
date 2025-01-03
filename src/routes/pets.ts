@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { NextFunction, Request, Response } from "express";
 import Pet from "../models/Pet";
 import multer from "multer";
 import Task from "../models/Task";
@@ -10,16 +11,6 @@ const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
 const router = Router();
-
-router.get("/:id/tasks", authToken, async (req, res) => {
-  try {
-    const tasks = await Task.find({ pet: req.params.id });
-    res.json(tasks);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Internal Server Error" });
-  }
-});
 
 router.post("/", authToken, async (req, res) => {
   const validation = createPetSchema.safeParse(req.body);
@@ -37,6 +28,11 @@ router.post("/", authToken, async (req, res) => {
   const { name, type, breed, birthdate, user } = req.body;
   const newPet = new Pet({ name, type, breed, birthdate, user });
 
+  if (req.user._id !== user) {
+    res.status(403).json({ error: "You can only create pets for yourself" });
+    return;
+  }
+
   try {
     await newPet.save();
     res.status(201).json(newPet);
@@ -46,7 +42,41 @@ router.post("/", authToken, async (req, res) => {
   }
 });
 
-router.patch("/:id", authToken, async (req, res) => {
+router.post(
+  "/:id/picture",
+  authToken,
+  checkOwnership,
+  upload.single("picture"),
+  async (req, res) => {
+    const { file } = req;
+
+    if (!file) {
+      res.status(400).json({ error: "No file provided" });
+      return;
+    }
+    try {
+      req.pet.picture.buffer = file.buffer;
+      req.pet.picture.contentType = file.mimetype;
+      const updated = await req.pet.save();
+      res.json(transformPicture(updated));
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: "Internal Server Error" });
+    }
+  }
+);
+
+router.get("/:id/tasks", authToken, checkOwnership, async (req, res) => {
+  try {
+    const tasks = await Task.find({ pet: req.params.id });
+    res.json(tasks);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+router.patch("/:id", authToken, checkOwnership, async (req, res) => {
   const validation = updatePetSchema.safeParse(req.body);
   if (!validation.success) {
     res.status(400).json({
@@ -60,20 +90,13 @@ router.patch("/:id", authToken, async (req, res) => {
   }
 
   try {
-    const pet = await Pet.findById(req.params.id);
-
-    if (!pet) {
-      res.status(404).json({ error: "Pet not found" });
-      return;
-    }
-
     const { name, type, breed, birthdate } = req.body;
-    if (name != undefined) pet.name = name;
-    if (type != undefined) pet.type = type;
-    if (breed != undefined) pet.breed = breed;
-    if (birthdate != undefined) pet.birthdate = birthdate;
+    if (name != undefined) req.pet.name = name;
+    if (type != undefined) req.pet.type = type;
+    if (breed != undefined) req.pet.breed = breed;
+    if (birthdate != undefined) req.pet.birthdate = birthdate;
 
-    const updated = await pet.save();
+    const updated = await req.pet.save();
     res.json(transformPicture(updated));
   } catch (error) {
     console.error(error);
@@ -81,22 +104,16 @@ router.patch("/:id", authToken, async (req, res) => {
   }
 });
 
-router.get("/:id", authToken, async (req, res) => {
+router.get("/:id", authToken, checkOwnership, async (req, res) => {
   try {
-    const pet = await Pet.findById(req.params.id);
-
-    if (!pet) {
-      res.status(404).json({ error: "Pet not found" });
-      return;
-    }
-    res.json(transformPicture(pet));
+    res.json(transformPicture(req.pet));
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
 
-router.get("/:id/tasks", authToken, async (req, res) => {
+router.get("/:id/tasks", authToken, checkOwnership, async (req, res) => {
   try {
     const tasks = await Task.find({ pet: req.params.id });
     res.json(tasks);
@@ -106,35 +123,24 @@ router.get("/:id/tasks", authToken, async (req, res) => {
   }
 });
 
-router.post(
-  "/:id/picture",
-  authToken,
-  upload.single("picture"),
-  async (req, res) => {
-    const { file } = req;
+async function checkOwnership(req: Request, res: Response, next: NextFunction) {
+  try {
+    const pet = await Pet.findById(req.params.id);
 
-    if (!file) {
-      res.status(400).json({ error: "No file provided" });
+    if (!pet) {
+      res.status(404).json({ error: "Pet not found" });
       return;
     }
-
-    try {
-      const pet = await Pet.findById(req.params.id);
-
-      if (!pet) {
-        res.status(404).json({ error: "Pet not found" });
-        return;
-      }
-      pet.picture.buffer = file.buffer;
-      pet.picture.contentType = file.mimetype;
-      const updated = await pet.save();
-
-      res.json(transformPicture(updated));
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: "Internal Server Error" });
+    if (req.user._id !== pet.user.toString()) {
+      res.status(403).json({ error: "You can only access your own pets" });
+      return;
     }
+    req.pet = pet;
+    next();
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal Server Error" });
   }
-);
+}
 
 export default router;

@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { NextFunction, Request, Response } from "express";
 import User from "../models/User";
 import multer from "multer";
 import Pet from "../models/Pet";
@@ -8,7 +9,6 @@ import transformPicture from "../utils/transformPicture";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import authToken from "../middlewares/authToken";
-import checkOwnership from "../middlewares/checkOwnership";
 
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
@@ -175,5 +175,13 @@ router.get("/:id", authToken, checkOwnership, async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
+
+function checkOwnership(req: Request, res: Response, next: NextFunction) {
+  if (req.user?._id !== req.params.id) {
+    res.status(403).json({ error: "You can only access your own data" });
+    return;
+  }
+  next();
+}
 
 export default router;
