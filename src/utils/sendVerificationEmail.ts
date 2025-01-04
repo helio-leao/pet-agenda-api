@@ -1,6 +1,6 @@
 import transporter from "../config/mailer";
 
-const PAGE_URL = process.env.PAGE_URL || "http://localhost:5173";
+const { CLIENT_URL } = process.env;
 
 export default async function sendVerificationEmail(
   email: string,
@@ -12,7 +12,7 @@ export default async function sendVerificationEmail(
     subject: "Verify your Pet Agenda account",
     html: `
         <p>You are one step closer of being able to keep an eye on the schedule of your wonderful pets</p>
-        <p>Press <a href=${PAGE_URL}/verify-account/${token}>here</a> to proceed</p>
+        <p>Press <a href=${CLIENT_URL}/verify-account/${token}>here</a> to proceed</p>
       `,
   };
 
