@@ -1,6 +1,6 @@
 import transporter from "../config/mailer";
 
-const PAGE_URL = "http://localhost:5173";
+const PAGE_URL = process.env.PAGE_URL || "http://localhost:5173";
 
 export default async function sendVerificationEmail(
   email: string,
