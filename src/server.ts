@@ -9,9 +9,9 @@ import swaggerUi from "swagger-ui-express";
 import swaggerDocument from "./swagger/swagger-output.json";
 
 const PORT = process.env.PORT || 3000;
+
 const allowedOrigins = [
   "http://localhost:5173",
-  "https://pet-agenda.onrender.com",
   "https://pet-agenda.vercel.app",
 ];
 
