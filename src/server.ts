@@ -9,6 +9,10 @@ import swaggerUi from "swagger-ui-express";
 import swaggerDocument from "./swagger/swagger-output.json";
 
 const PORT = process.env.PORT || 3000;
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://pet-agenda.onrender.com",
+];
 
 mongoose.connect(process.env.DATABASE_URL!);
 const db = mongoose.connection;
@@ -17,7 +21,7 @@ db.once("open", () => console.log("Connected to database"));
 
 const app = express();
 app.use(express.json());
-app.use(cors());
+app.use(cors({ origin: allowedOrigins }));
 
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 app.use("/auth", authRouter);
