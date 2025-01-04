@@ -97,6 +97,11 @@ router.post("/send-verification-email", async (req, res) => {
       res.status(404).json({ error: "User not found" });
       return;
     }
+    if (user.verified) {
+      res.status(400).json({ error: "User already verified" });
+      return;
+    }
+
     const payload = {
       user: {
         _id: user._id,
@@ -127,6 +132,10 @@ router.post("/verify-account", async (req, res) => {
 
     if (!user) {
       res.status(404).json({ error: "User not found" });
+      return;
+    }
+    if (user.verified) {
+      res.status(400).json({ error: "User already verified" });
       return;
     }
     user.verified = true;
