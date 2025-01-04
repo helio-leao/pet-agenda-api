@@ -7,7 +7,7 @@ import { createUserSchema } from "../schemas/userSchema";
 import TokenPayload from "../types/TokenPayload";
 import sendVerificationEmail from "../utils/sendVerificationEmail";
 
-const { ACCESS_TOKEN_SECRET, REFRESH_TOKEN_SECRET, VERIFY_EMAIL_SECRET } =
+const { ACCESS_TOKEN_SECRET, REFRESH_TOKEN_SECRET, VERIFY_EMAIL_TOKEN_SECRET } =
   process.env;
 
 const router = Router();
@@ -107,7 +107,7 @@ router.post("/send-verification-email", async (req, res) => {
         _id: user._id,
       },
     };
-    const token = jwt.sign(payload, process.env.VERIFY_EMAIL_SECRET!, {
+    const token = jwt.sign(payload, VERIFY_EMAIL_TOKEN_SECRET!, {
       expiresIn: "6h",
     });
     const result = await sendVerificationEmail(user.email, token);
@@ -127,7 +127,10 @@ router.post("/verify-account", async (req, res) => {
   }
 
   try {
-    const payload = jwt.verify(token, VERIFY_EMAIL_SECRET!) as TokenPayload;
+    const payload = jwt.verify(
+      token,
+      VERIFY_EMAIL_TOKEN_SECRET!
+    ) as TokenPayload;
     const user = await User.findById(payload.user._id);
 
     if (!user) {
