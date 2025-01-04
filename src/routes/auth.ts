@@ -5,8 +5,10 @@ import User from "../models/User";
 import RefreshToken from "../models/RefreshToken";
 import { createUserSchema } from "../schemas/userSchema";
 import TokenPayload from "../types/TokenPayload";
+import sendVerificationEmail from "../utils/sendVerificationEmail";
 
-const { ACCESS_TOKEN_SECRET, REFRESH_TOKEN_SECRET } = process.env;
+const { ACCESS_TOKEN_SECRET, REFRESH_TOKEN_SECRET, VERIFY_EMAIL_SECRET } =
+  process.env;
 
 const router = Router();
 
@@ -28,18 +30,23 @@ router.post("/login", async (req, res) => {
       res.status(401).json({ error: "User not verified" });
       return;
     }
-
-    const payload = { _id: user._id };
-
-    const accessToken = jwt.sign({ user: payload }, ACCESS_TOKEN_SECRET!, {
+    const payload = {
+      user: {
+        _id: user._id,
+      },
+    };
+    const accessToken = jwt.sign(payload, ACCESS_TOKEN_SECRET!, {
       expiresIn: "10m",
     });
-    const refreshToken = jwt.sign({ user: payload }, REFRESH_TOKEN_SECRET!);
+    const refreshToken = jwt.sign(payload, REFRESH_TOKEN_SECRET!);
 
     const newRefreshToken = new RefreshToken({ refreshToken });
     await newRefreshToken.save();
 
-    res.json({ user: payload, accessToken, refreshToken });
+    const userWithoutPassword = user.toObject() as any;
+    delete userWithoutPassword.password;
+
+    res.json({ user: userWithoutPassword, accessToken, refreshToken });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Internal Server Error" });
@@ -72,6 +79,62 @@ router.post("/signup", async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+router.post("/send-verification-email", async (req, res) => {
+  const { id } = req.body;
+
+  if (!id) {
+    res.status(400).json({ error: "User ID is required" });
+    return;
+  }
+
+  try {
+    const user = await User.findById(id);
+
+    if (!user) {
+      res.status(404).json({ error: "User not found" });
+      return;
+    }
+    const payload = {
+      user: {
+        _id: user._id,
+      },
+    };
+    const token = jwt.sign(payload, process.env.VERIFY_EMAIL_SECRET!, {
+      expiresIn: "6h",
+    });
+    const result = await sendVerificationEmail(user.email, token);
+    res.json(result);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+router.post("/verify-account", async (req, res) => {
+  const { token } = req.body;
+
+  if (!token) {
+    res.status(400).json({ error: "Token is required" });
+    return;
+  }
+
+  try {
+    const payload = jwt.verify(token, VERIFY_EMAIL_SECRET!) as TokenPayload;
+    const user = await User.findById(payload.user._id);
+
+    if (!user) {
+      res.status(404).json({ error: "User not found" });
+      return;
+    }
+    user.verified = true;
+    const updated = await user.save();
+    res.json(updated);
+  } catch (error) {
+    console.error(error);
+    res.status(401).json({ error: "Invalid token" });
   }
 });
 
