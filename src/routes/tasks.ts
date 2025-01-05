@@ -19,13 +19,21 @@ router.post("/", authToken, async (req, res) => {
     return;
   }
 
-  const { title, description, date, status, user, pet } = req.body;
-  const newTask = new Task({ title, description, date, status, user, pet });
-
-  if (req.user._id !== user) {
+  if (req.user._id !== req.body.user) {
     res.status(403).json({ error: "You can only create tasks for yourself" });
     return;
   }
+
+  const { title, description, date, status, user, pet, interval } = req.body;
+  const newTask = new Task({
+    title,
+    description,
+    date,
+    status,
+    user,
+    pet,
+    interval,
+  });
 
   try {
     await newTask.save();
@@ -50,12 +58,13 @@ router.patch("/:id", authToken, checkOwnership, async (req, res) => {
   }
 
   try {
-    const { title, description, date, status, pet } = req.body;
+    const { title, description, date, status, pet, interval } = req.body;
     if (title != undefined) req.task.title = title;
     if (description != undefined) req.task.description = description;
     if (date != undefined) req.task.date = date;
     if (status != undefined) req.task.status = status;
     if (pet != undefined) req.task.pet = pet;
+    if (interval != undefined) req.task.interval = interval;
 
     const updated = await req.task.save();
     res.json(updated);
