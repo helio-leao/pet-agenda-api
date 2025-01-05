@@ -7,7 +7,7 @@ export interface ITask {
   interval: {
     unit: "DAYS" | "MONTHS" | "YEARS";
     value: number;
-  };
+  } | null;
   status: "SCHEDULED" | "COMPLETED" | "CANCELLED ";
   user: Types.ObjectId;
   pet: Types.ObjectId;
@@ -27,13 +27,16 @@ const taskSchema = new mongoose.Schema<ITask>(
       required: true,
     },
     interval: {
-      unit: {
-        type: String,
-        enum: ["DAYS", "MONTHS", "YEARS"],
+      type: {
+        unit: {
+          type: String,
+          enum: ["DAYS", "MONTHS", "YEARS"],
+        },
+        value: {
+          type: Number,
+        },
       },
-      value: {
-        type: Number,
-      },
+      default: null,
     },
     status: {
       type: String,

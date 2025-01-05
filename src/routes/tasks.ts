@@ -64,7 +64,7 @@ router.patch("/:id", authToken, checkOwnership, async (req, res) => {
     if (date != undefined) req.task.date = date;
     if (status != undefined) req.task.status = status;
     if (pet != undefined) req.task.pet = pet;
-    if (interval != undefined) req.task.interval = interval;
+    if (interval !== undefined) req.task.interval = interval; // null included
 
     const updated = await req.task.save();
     res.json(updated);
