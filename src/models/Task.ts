@@ -37,6 +37,7 @@ const taskSchema = new mongoose.Schema<ITask>(
         },
       },
       default: null,
+      _id: false,
     },
     status: {
       type: String,
