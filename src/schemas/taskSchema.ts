@@ -21,7 +21,7 @@ export const createTaskSchema = z.object({
       value: z
         .number()
         .int({ message: "Interval value must be an integer" })
-        .min(1, { message: "Interval value must be higher than 1" }),
+        .min(1, { message: "Interval value must be at least 1" }),
     })
     .nullable()
     .optional(),
