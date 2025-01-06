@@ -4,13 +4,14 @@ export interface ITask {
   title: string;
   description: string;
   date: Date;
-  interval: {
-    unit: "DAYS" | "MONTHS" | "YEARS";
-    value: number;
-  } | null;
-  status: "SCHEDULED" | "COMPLETED" | "CANCELLED";
   user: Types.ObjectId;
   pet: Types.ObjectId;
+
+  nextDate: Date | null;
+  interval: {
+    unit: "HOURS" | "DAYS" | "MONTHS" | "YEARS";
+    value: number;
+  } | null;
 }
 
 const taskSchema = new mongoose.Schema<ITask>(
@@ -26,24 +27,6 @@ const taskSchema = new mongoose.Schema<ITask>(
       type: Date,
       required: true,
     },
-    interval: {
-      type: {
-        unit: {
-          type: String,
-          enum: ["DAYS", "MONTHS", "YEARS"],
-        },
-        value: {
-          type: Number,
-        },
-      },
-      default: null,
-      _id: false,
-    },
-    status: {
-      type: String,
-      enum: ["SCHEDULED", "COMPLETED", "CANCELLED"],
-      required: true,
-    },
     user: {
       type: mongoose.SchemaTypes.ObjectId,
       ref: "User",
@@ -53,6 +36,24 @@ const taskSchema = new mongoose.Schema<ITask>(
       type: mongoose.SchemaTypes.ObjectId,
       ref: "Pet",
       required: true,
+    },
+
+    nextDate: {
+      type: Date,
+      default: null,
+    },
+    interval: {
+      type: {
+        unit: {
+          type: String,
+          enum: ["HOURS", "DAYS", "MONTHS", "YEARS"],
+        },
+        value: {
+          type: Number,
+        },
+      },
+      default: null,
+      _id: false,
     },
   },
   {
