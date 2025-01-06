@@ -17,13 +17,13 @@ export const createTaskSchema = z.object({
     message: "Date must be a valid ISO date string",
   }),
 
-  nextDate: z
-    .string()
-    .refine((date) => !isNaN(Date.parse(date)), {
-      message: "Date must be a valid ISO date string",
-    })
-    .nullable()
-    .optional(),
+  // nextDate: z
+  //   .string()
+  //   .refine((date) => !isNaN(Date.parse(date)), {
+  //     message: "Date must be a valid ISO date string",
+  //   })
+  //   .nullable()
+  //   .optional(),
   interval: z
     .object({
       unit: z.enum(["HOURS", "DAYS", "MONTHS", "YEARS"], {
