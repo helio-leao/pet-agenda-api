@@ -41,7 +41,7 @@ router.patch("/:id", authToken, checkOwnership, async (req, res) => {
     // if (email != undefined) user.email = email;
 
     const updated = await user.save();
-    res.json(transformPicture(updated));
+    res.json(transformPicture(updated.toObject()));
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Internal Server Error" });
@@ -51,7 +51,7 @@ router.patch("/:id", authToken, checkOwnership, async (req, res) => {
 router.get("/:id/pets", authToken, checkOwnership, async (req, res) => {
   try {
     const pets = await Pet.find({ user: req.params.id });
-    res.json(pets.map(transformPicture));
+    res.json(pets.map((pet) => transformPicture(pet.toObject())));
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Internal Server Error" });
@@ -94,7 +94,7 @@ router.post(
       user.picture.contentType = file.mimetype;
       const updated = await user.save();
 
-      res.json(transformPicture(updated));
+      res.json(transformPicture(updated.toObject()));
     } catch (error) {
       console.error(error);
       res.status(500).json({ error: "Internal Server Error" });
@@ -110,7 +110,7 @@ router.get("/:id", authToken, checkOwnership, async (req, res) => {
       res.status(404).json({ error: "User not found" });
       return;
     }
-    res.json(transformPicture(user));
+    res.json(transformPicture(user.toObject()));
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Internal Server Error" });

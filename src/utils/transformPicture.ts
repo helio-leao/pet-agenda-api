@@ -1,7 +1,6 @@
-export default function transformPicture(document: any) {
-  const object = document.toObject();
+export default function transformPicture(object: any) {
   return {
-    ...document.toObject(),
+    ...object,
     picture: object.picture
       ? `data:${
           object.picture.contentType

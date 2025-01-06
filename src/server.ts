@@ -3,6 +3,7 @@ import authRouter from "./routes/auth";
 import usersRouter from "./routes/users";
 import petsRouter from "./routes/pets";
 import tasksRouter from "./routes/tasks";
+import petWeightRecordsRouter from "./routes/petWeightRecords";
 import mongoose from "mongoose";
 import cors from "cors";
 import swaggerUi from "swagger-ui-express";
@@ -29,5 +30,6 @@ app.use("/auth", authRouter);
 app.use("/users", usersRouter);
 app.use("/pets", petsRouter);
 app.use("/tasks", tasksRouter);
+app.use("/petWeightRecords", petWeightRecordsRouter);
 
 app.listen(PORT, () => console.log(`Server listening on port ${PORT}...`));

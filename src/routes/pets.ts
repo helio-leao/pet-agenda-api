@@ -63,7 +63,7 @@ router.post(
       req.pet.picture.buffer = file.buffer;
       req.pet.picture.contentType = file.mimetype;
       const updated = await req.pet.save();
-      res.json(transformPicture(updated));
+      res.json(transformPicture(updated.toObject()));
     } catch (error) {
       console.error(error);
       res.status(500).json({ error: "Internal Server Error" });
@@ -92,7 +92,7 @@ router.patch("/:id", authToken, checkOwnership, async (req, res) => {
     if (birthdate != undefined) req.pet.birthdate = birthdate;
 
     const updated = await req.pet.save();
-    res.json(transformPicture(updated));
+    res.json(transformPicture(updated.toObject()));
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Internal Server Error" });
@@ -101,7 +101,7 @@ router.patch("/:id", authToken, checkOwnership, async (req, res) => {
 
 router.get("/:id", authToken, checkOwnership, async (req, res) => {
   try {
-    res.json(transformPicture(req.pet));
+    res.json(transformPicture(req.pet.toObject()));
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Internal Server Error" });
