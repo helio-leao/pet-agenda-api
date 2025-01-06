@@ -121,6 +121,23 @@ router.get("/:id/tasks", authToken, checkOwnership, async (req, res) => {
 
 // pet weight records
 router.get(
+  "/:id/petWeightRecords/latest",
+  authToken,
+  checkOwnership,
+  async (req, res) => {
+    try {
+      const petWeightRecord = await PetWeightRecord.findOne().sort({
+        date: -1,
+      });
+      res.json(petWeightRecord);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: "Internal Server Error" });
+    }
+  }
+);
+
+router.get(
   "/:id/petWeightRecords",
   authToken,
   checkOwnership,

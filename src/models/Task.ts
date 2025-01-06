@@ -8,7 +8,7 @@ export interface ITask {
     unit: "DAYS" | "MONTHS" | "YEARS";
     value: number;
   } | null;
-  status: "SCHEDULED" | "COMPLETED" | "CANCELLED ";
+  status: "SCHEDULED" | "COMPLETED" | "CANCELLED";
   user: Types.ObjectId;
   pet: Types.ObjectId;
 }
@@ -41,7 +41,7 @@ const taskSchema = new mongoose.Schema<ITask>(
     },
     status: {
       type: String,
-      enum: ["SCHEDULED", "COMPLETED", "CANCELLED "],
+      enum: ["SCHEDULED", "COMPLETED", "CANCELLED"],
       required: true,
     },
     user: {

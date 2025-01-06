@@ -25,7 +25,7 @@ export const createTaskSchema = z.object({
     })
     .nullable()
     .optional(),
-  status: z.enum(["SCHEDULED", "COMPLETED", "CANCELLED "], {
+  status: z.enum(["SCHEDULED", "COMPLETED", "CANCELLED"], {
     message: "Status must be one of 'SCHEDULED', 'COMPLETED' or 'CANCELLED'",
   }),
   user: z.string().nonempty({ message: "User is required" }),
