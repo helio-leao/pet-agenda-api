@@ -3,6 +3,6 @@ declare namespace Express {
     user?: any;
     pet?: any;
     task?: any;
-    petWeightRecords?: any;
+    petWeightRecord?: any;
   }
 }
