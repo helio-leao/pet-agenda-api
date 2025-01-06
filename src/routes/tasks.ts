@@ -58,12 +58,11 @@ router.patch("/:id", authToken, checkOwnership, async (req, res) => {
   }
 
   try {
-    const { title, description, date, status, pet, interval } = req.body;
+    const { title, description, date, status, interval } = req.body;
     if (title != undefined) req.task.title = title;
     if (description != undefined) req.task.description = description;
     if (date != undefined) req.task.date = date;
     if (status != undefined) req.task.status = status;
-    if (pet != undefined) req.task.pet = pet;
     if (interval !== undefined) req.task.interval = interval; // null included
 
     const updated = await req.task.save();
