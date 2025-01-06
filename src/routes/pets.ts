@@ -145,7 +145,7 @@ router.get(
     try {
       const petWeightRecords = await PetWeightRecord.find({
         pet: req.params.id,
-      });
+      }).sort({ date: -1 });
       res.json(petWeightRecords);
     } catch (error) {
       console.error(error);
