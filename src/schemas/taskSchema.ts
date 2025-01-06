@@ -22,6 +22,7 @@ export const createTaskSchema = z.object({
     .refine((date) => !isNaN(Date.parse(date)), {
       message: "Date must be a valid ISO date string",
     })
+    .nullable()
     .optional(),
   interval: z
     .object({
@@ -34,6 +35,7 @@ export const createTaskSchema = z.object({
         .int({ message: "Interval value must be an integer" })
         .min(1, { message: "Interval value must be at least 1" }),
     })
+    .nullable()
     .optional(),
 });
 
