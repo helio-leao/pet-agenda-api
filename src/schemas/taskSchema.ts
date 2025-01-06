@@ -1,6 +1,9 @@
 import { z } from "zod";
 
 export const createTaskSchema = z.object({
+  user: z.string().nonempty({ message: "User is required" }),
+  pet: z.string().nonempty({ message: "Pet is required" }),
+
   title: z
     .string()
     .min(2, { message: "Title must be at least 2 characters" })
@@ -13,20 +16,25 @@ export const createTaskSchema = z.object({
   date: z.string().refine((date) => !isNaN(Date.parse(date)), {
     message: "Date must be a valid ISO date string",
   }),
+
+  nextDate: z
+    .string()
+    .refine((date) => !isNaN(Date.parse(date)), {
+      message: "Date must be a valid ISO date string",
+    })
+    .optional(),
   interval: z
     .object({
-      unit: z.enum(["DAYS", "MONTHS", "YEARS"], {
-        message: "Interval value must be one of 'DAYS', 'MONTHS' or 'YEARS'",
+      unit: z.enum(["HOURS", "DAYS", "MONTHS", "YEARS"], {
+        message:
+          "Interval value must be one of 'HOURS', 'DAYS', 'MONTHS' or 'YEARS'",
       }),
       value: z
         .number()
         .int({ message: "Interval value must be an integer" })
         .min(1, { message: "Interval value must be at least 1" }),
     })
-    .nullable()
     .optional(),
-  user: z.string().nonempty({ message: "User is required" }),
-  pet: z.string().nonempty({ message: "Pet is required" }),
 });
 
 export const updateTaskSchema = createTaskSchema.partial();
