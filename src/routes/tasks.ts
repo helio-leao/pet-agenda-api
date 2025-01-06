@@ -19,6 +19,7 @@ router.post("/", authToken, async (req, res) => {
     return;
   }
 
+  // note: compare this to pet weight records verification
   if (req.user._id !== req.body.user) {
     res.status(403).json({ error: "You can only create tasks for yourself" });
     return;
