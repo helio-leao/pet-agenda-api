@@ -3,6 +3,7 @@ import { NextFunction, Request, Response } from "express";
 import Task from "../models/Task";
 import { createTaskSchema, updateTaskSchema } from "../schemas/taskSchema";
 import authToken from "../middlewares/authToken";
+import nextDate from "../utils/nextDate";
 
 const router = Router();
 
@@ -74,6 +75,35 @@ router.patch("/:id", authToken, checkOwnership, async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
+
+router.post(
+  "/:id/pushDoneDate",
+  authToken,
+  checkOwnership,
+  async (req, res) => {
+    try {
+      const { date } = req.body;
+
+      if (!date || isNaN(Date.parse(date))) {
+        res.status(400).json({ error: "Invalid date format" });
+        return;
+      }
+
+      req.task.history.push(date);
+      req.task.date = nextDate(
+        req.task.interval,
+        req.task.intervalUnit,
+        new Date(date)
+      );
+
+      const updated = await req.task.save();
+      res.json(updated);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: "Internal Server Error" });
+    }
+  }
+);
 
 router.get("/:id", authToken, checkOwnership, async (req, res) => {
   try {
