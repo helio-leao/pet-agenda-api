@@ -17,26 +17,16 @@ export const createTaskSchema = z.object({
     message: "Date must be a valid ISO date string",
   }),
 
-  // nextDate: z
-  //   .string()
-  //   .refine((date) => !isNaN(Date.parse(date)), {
-  //     message: "Date must be a valid ISO date string",
-  //   })
-  //   .nullable()
-  //   .optional(),
   interval: z
-    .object({
-      unit: z.enum(["HOURS", "DAYS", "MONTHS", "YEARS"], {
-        message:
-          "Interval value must be one of 'HOURS', 'DAYS', 'MONTHS' or 'YEARS'",
-      }),
-      value: z
-        .number()
-        .int({ message: "Interval value must be an integer" })
-        .min(1, { message: "Interval value must be at least 1" }),
-    })
-    .nullable()
-    .optional(),
+    .number()
+    .int({ message: "Interval value must be an integer" })
+    .min(1, { message: "Interval value must be at least 1" }),
+  intervalUnit: z.enum(["HOURS", "WEEKS", "DAYS", "MONTHS", "YEARS"], {
+    message:
+      "Interval value must be one of 'HOURS', 'WEEKS', 'DAYS', 'MONTHS' or 'YEARS'",
+  }),
+
+  history: z.array(z.date()).default([]),
 });
 
 export const updateTaskSchema = createTaskSchema.partial();
