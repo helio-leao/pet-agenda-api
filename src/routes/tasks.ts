@@ -77,7 +77,7 @@ router.patch("/:id", authToken, checkOwnership, async (req, res) => {
 });
 
 router.post(
-  "/:id/pushDoneDate",
+  "/:id/add-done-date",
   authToken,
   checkOwnership,
   async (req, res) => {

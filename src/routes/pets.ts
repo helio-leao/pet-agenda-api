@@ -121,7 +121,7 @@ router.get("/:id/tasks", authToken, checkOwnership, async (req, res) => {
 
 // pet weight records
 router.get(
-  "/:id/petWeightRecords/latest",
+  "/:id/weight-records/latest",
   authToken,
   checkOwnership,
   async (req, res) => {
@@ -138,7 +138,7 @@ router.get(
 );
 
 router.get(
-  "/:id/petWeightRecords",
+  "/:id/weight-records",
   authToken,
   checkOwnership,
   async (req, res) => {
@@ -155,7 +155,7 @@ router.get(
 );
 
 router.post(
-  "/:id/petWeightRecords",
+  "/:id/weight-records",
   authToken,
   checkOwnership,
   async (req, res) => {
@@ -185,7 +185,7 @@ router.post(
 );
 
 router.patch(
-  "/:id/petWeightRecords/:recordId",
+  "/:id/weight-records/:recordId",
   authToken,
   checkOwnership,
   async (req, res) => {

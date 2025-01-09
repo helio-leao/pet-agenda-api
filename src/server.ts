@@ -30,6 +30,6 @@ app.use("/auth", authRouter);
 app.use("/users", usersRouter);
 app.use("/pets", petsRouter);
 app.use("/tasks", tasksRouter);
-app.use("/petWeightRecords", petWeightRecordsRouter);
+app.use("/pet-weight-records", petWeightRecordsRouter);
 
 app.listen(PORT, () => console.log(`Server listening on port ${PORT}...`));
