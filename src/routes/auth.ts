@@ -40,7 +40,7 @@ router.post("/login", async (req, res) => {
     });
     const refreshToken = jwt.sign(payload, REFRESH_TOKEN_SECRET!);
 
-    const newRefreshToken = new RefreshToken({ refreshToken });
+    const newRefreshToken = new RefreshToken({ refreshToken, user: user._id });
     await newRefreshToken.save();
 
     const userWithoutPassword = user.toObject() as any;
