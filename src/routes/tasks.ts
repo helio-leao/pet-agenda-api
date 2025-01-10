@@ -4,6 +4,7 @@ import Task from "../models/Task";
 import { createTaskSchema, updateTaskSchema } from "../schemas/taskSchema";
 import authToken from "../middlewares/authToken";
 import nextDate from "../utils/nextDate";
+import Pet from "../models/Pet";
 
 const router = Router();
 
@@ -20,23 +21,36 @@ router.post("/", authToken, async (req, res) => {
     return;
   }
 
-  // note: compare this to pet weight records verification
-  if (req.user._id !== req.body.user) {
-    res.status(403).json({ error: "You can only create tasks for yourself" });
-    return;
-  }
-
-  const { title, description, date, user, pet, interval } = req.body;
-  const newTask = new Task({
-    title,
-    description,
-    date,
-    user,
-    pet,
-    interval,
-  });
-
   try {
+    // verify user ownership
+    if (req.user._id !== req.body.user) {
+      res.status(403).json({ error: "You can only create tasks for yourself" });
+      return;
+    }
+
+    // verify pet ownership
+    const searchedPet = await Pet.findById(req.body.pet);
+
+    if (!searchedPet) {
+      res.status(404).json({ error: "Pet not found" });
+      return;
+    }
+    if (req.user._id !== searchedPet.user.toString()) {
+      res.status(403).json({ error: "You can only access your own pets" });
+      return;
+    }
+
+    // creates new task
+    const { title, description, date, user, pet, interval } = req.body;
+    const newTask = new Task({
+      title,
+      description,
+      date,
+      user,
+      pet,
+      interval,
+    });
+
     await newTask.save();
     res.status(201).json(newTask);
   } catch (error) {
