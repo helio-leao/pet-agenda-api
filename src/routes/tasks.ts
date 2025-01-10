@@ -26,8 +26,7 @@ router.post("/", authToken, async (req, res) => {
     return;
   }
 
-  const { title, description, date, user, pet, interval, intervalUnit } =
-    req.body;
+  const { title, description, date, user, pet, interval } = req.body;
   const newTask = new Task({
     title,
     description,
@@ -35,7 +34,6 @@ router.post("/", authToken, async (req, res) => {
     user,
     pet,
     interval,
-    intervalUnit,
   });
 
   try {
@@ -61,12 +59,11 @@ router.patch("/:id", authToken, checkOwnership, async (req, res) => {
   }
 
   try {
-    const { title, description, date, interval, intervalUnit } = req.body;
+    const { title, description, date, interval } = req.body;
     if (title != undefined) req.task.title = title;
     if (description != undefined) req.task.description = description;
     if (date != undefined) req.task.date = date;
     if (interval !== undefined) req.task.interval = interval;
-    if (intervalUnit !== undefined) req.task.intervalUnit = intervalUnit;
 
     const updated = await req.task.save();
     res.json(updated);

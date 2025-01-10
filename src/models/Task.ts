@@ -8,8 +8,10 @@ export interface ITask {
   description: string;
   date: Date;
 
-  intervalUnit: "HOURS" | "DAYS" | "WEEKS" | "MONTHS" | "YEARS";
-  interval: number;
+  interval: {
+    unit: "HOURS" | "DAYS" | "WEEKS" | "MONTHS" | "YEARS";
+    value: number;
+  };
 
   history: Date[];
 }
@@ -39,12 +41,17 @@ const taskSchema = new mongoose.Schema<ITask>(
       required: true,
     },
 
-    intervalUnit: {
-      type: String,
-      enum: ["HOURS", "DAYS", "WEEKS", "MONTHS", "YEARS"],
-    },
     interval: {
-      type: Number,
+      type: {
+        unit: {
+          type: String,
+          enum: ["HOURS", "DAYS", "WEEKS", "MONTHS", "YEARS"],
+        },
+        value: {
+          type: Number,
+        },
+      },
+      _id: false,
     },
 
     history: {
