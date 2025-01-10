@@ -50,7 +50,7 @@ router.post("/", authToken, async (req, res) => {
 router.post(
   "/:id/picture",
   authToken,
-  checkOwnership,
+  checkPetOwnership,
   upload.single("picture"),
   async (req, res) => {
     const { file } = req;
@@ -71,7 +71,7 @@ router.post(
   }
 );
 
-router.patch("/:id", authToken, checkOwnership, async (req, res) => {
+router.patch("/:id", authToken, checkPetOwnership, async (req, res) => {
   const validation = updatePetSchema.safeParse(req.body);
   if (!validation.success) {
     res.status(400).json({
@@ -99,7 +99,7 @@ router.patch("/:id", authToken, checkOwnership, async (req, res) => {
   }
 });
 
-router.get("/:id", authToken, checkOwnership, async (req, res) => {
+router.get("/:id", authToken, checkPetOwnership, async (req, res) => {
   try {
     res.json(transformPicture(req.pet.toObject()));
   } catch (error) {
@@ -109,7 +109,7 @@ router.get("/:id", authToken, checkOwnership, async (req, res) => {
 });
 
 // tasks
-router.get("/:id/tasks", authToken, checkOwnership, async (req, res) => {
+router.get("/:id/tasks", authToken, checkPetOwnership, async (req, res) => {
   try {
     const tasks = await Task.find({ pet: req.params.id }).sort({ date: 1 });
     res.json(tasks);
@@ -123,15 +123,15 @@ router.get("/:id/tasks", authToken, checkOwnership, async (req, res) => {
 router.get(
   "/:id/weight-records/latest",
   authToken,
-  checkOwnership,
+  checkPetOwnership,
   async (req, res) => {
     try {
-      const petWeightRecord = await PetWeightRecord.findOne({
+      const weightRecord = await PetWeightRecord.findOne({
         pet: req.params.id,
       }).sort({
         date: -1,
       });
-      res.json(petWeightRecord);
+      res.json(weightRecord);
     } catch (error) {
       console.error(error);
       res.status(500).json({ error: "Internal Server Error" });
@@ -142,13 +142,14 @@ router.get(
 router.get(
   "/:id/weight-records",
   authToken,
-  checkOwnership,
+  checkPetOwnership,
   async (req, res) => {
     try {
-      const petWeightRecords = await PetWeightRecord.find({
+      const weightRecords = await PetWeightRecord.find({
         pet: req.params.id,
       }).sort({ date: -1 });
-      res.json(petWeightRecords);
+
+      res.json(weightRecords);
     } catch (error) {
       console.error(error);
       res.status(500).json({ error: "Internal Server Error" });
@@ -159,7 +160,7 @@ router.get(
 router.post(
   "/:id/weight-records",
   authToken,
-  checkOwnership,
+  checkPetOwnership,
   async (req, res) => {
     const validation = createPetWeightRecordSchema.safeParse(req.body);
     if (!validation.success) {
@@ -189,7 +190,8 @@ router.post(
 router.patch(
   "/:id/weight-records/:recordId",
   authToken,
-  checkOwnership,
+  checkPetOwnership,
+  checkWeightRecordOwnership,
   async (req, res) => {
     const validation = updatePetWeightRecordSchema.safeParse(req.body);
     if (!validation.success) {
@@ -205,17 +207,10 @@ router.patch(
     try {
       const { value, date } = req.body;
 
-      const petWeightRecord = await PetWeightRecord.findById(
-        req.params.recordId
-      );
-      if (!petWeightRecord) {
-        res.status(404).json({ error: "Weight record not found" });
-        return;
-      }
-      if (value != undefined) petWeightRecord.value = value;
-      if (date != undefined) petWeightRecord.date = date;
+      if (value != undefined) req.petWeightRecord.value = value;
+      if (date != undefined) req.petWeightRecord.date = date;
 
-      const updated = await petWeightRecord.save();
+      const updated = await req.petWeightRecord.save();
       res.json(updated);
     } catch (error) {
       console.error(error);
@@ -227,13 +222,12 @@ router.patch(
 router.get(
   "/:id/weight-records/:recordId",
   authToken,
-  checkOwnership,
+  checkPetOwnership,
+  checkWeightRecordOwnership,
   async (req, res) => {
     try {
-      const weightRecord = await PetWeightRecord.findById(req.params.recordId)
-        .populate({ path: "pet", select: "name" })
-        .exec();
-      res.json(weightRecord);
+      await req.petWeightRecord.populate({ path: "pet", select: "name" });
+      res.json(req.petWeightRecord);
     } catch (error) {
       console.error(error);
       res.status(500).json({ error: "Internal Server Error" });
@@ -244,10 +238,11 @@ router.get(
 router.delete(
   "/:id/weight-records/:recordId",
   authToken,
-  checkOwnership,
+  checkPetOwnership,
+  checkWeightRecordOwnership,
   async (req, res) => {
     try {
-      await PetWeightRecord.findByIdAndDelete(req.params.recordId);
+      await req.petWeightRecord.deleteOne();
       res.sendStatus(204);
     } catch (error) {
       console.error(error);
@@ -257,7 +252,11 @@ router.delete(
 );
 
 // middlewares
-async function checkOwnership(req: Request, res: Response, next: NextFunction) {
+async function checkPetOwnership(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
   try {
     const pet = await Pet.findById(req.params.id);
 
@@ -270,6 +269,30 @@ async function checkOwnership(req: Request, res: Response, next: NextFunction) {
       return;
     }
     req.pet = pet;
+    next();
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+}
+
+async function checkWeightRecordOwnership(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  try {
+    const weightRecord = await PetWeightRecord.findById(req.params.recordId);
+
+    if (!weightRecord) {
+      res.status(404).json({ error: "Weight record not found" });
+      return;
+    }
+    if (weightRecord.pet.toString() !== req.params.id) {
+      res.status(404).json({ error: "Weight record not found for this pet" });
+      return;
+    }
+    req.petWeightRecord = weightRecord;
     next();
   } catch (error) {
     console.error(error);
