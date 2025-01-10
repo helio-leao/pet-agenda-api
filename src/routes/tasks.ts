@@ -36,7 +36,9 @@ router.post("/", authToken, async (req, res) => {
       return;
     }
     if (req.user._id !== searchedPet.user.toString()) {
-      res.status(403).json({ error: "You can only access your own pets" });
+      res
+        .status(403)
+        .json({ error: "You can only create tasks for your own pets" });
       return;
     }
 
