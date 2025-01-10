@@ -224,6 +224,38 @@ router.patch(
   }
 );
 
+router.get(
+  "/:id/weight-records/:recordId",
+  authToken,
+  checkOwnership,
+  async (req, res) => {
+    try {
+      const weightRecord = await PetWeightRecord.findById(req.params.recordId)
+        .populate({ path: "pet", select: "name" })
+        .exec();
+      res.json(weightRecord);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: "Internal Server Error" });
+    }
+  }
+);
+
+router.delete(
+  "/:id/weight-records/:recordId",
+  authToken,
+  checkOwnership,
+  async (req, res) => {
+    try {
+      await PetWeightRecord.findByIdAndDelete(req.params.recordId);
+      res.sendStatus(204);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: "Internal Server Error" });
+    }
+  }
+);
+
 // middlewares
 async function checkOwnership(req: Request, res: Response, next: NextFunction) {
   try {
