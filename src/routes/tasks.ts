@@ -114,6 +114,7 @@ router.get("/:id", authToken, checkOwnership, async (req, res) => {
   }
 });
 
+// middlewares
 async function checkOwnership(req: Request, res: Response, next: NextFunction) {
   try {
     const task = await Task.findById(req.params.id);

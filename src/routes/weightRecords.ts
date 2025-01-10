@@ -28,6 +28,7 @@ router.delete("/:id", authToken, checkOwnership, async (req, res) => {
   }
 });
 
+// midlewares
 async function checkOwnership(req: Request, res: Response, next: NextFunction) {
   try {
     const petWeightRecord = await PetWeightRecord.findById(req.params.id)

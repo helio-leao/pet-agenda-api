@@ -48,31 +48,6 @@ router.patch("/:id", authToken, checkOwnership, async (req, res) => {
   }
 });
 
-router.get("/:id/pets", authToken, checkOwnership, async (req, res) => {
-  try {
-    const pets = await Pet.find({ user: req.params.id });
-    res.json(pets.map((pet) => transformPicture(pet.toObject())));
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Internal Server Error" });
-  }
-});
-
-router.get("/:id/tasks", authToken, checkOwnership, async (req, res) => {
-  try {
-    const tasks = await Task.find({ user: req.params.id })
-      .populate({
-        path: "pet",
-        select: "name",
-      })
-      .sort({ date: 1 });
-    res.json(tasks);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Internal Server Error" });
-  }
-});
-
 router.post(
   "/:id/picture",
   authToken,
@@ -119,6 +94,34 @@ router.get("/:id", authToken, checkOwnership, async (req, res) => {
   }
 });
 
+// pets
+router.get("/:id/pets", authToken, checkOwnership, async (req, res) => {
+  try {
+    const pets = await Pet.find({ user: req.params.id });
+    res.json(pets.map((pet) => transformPicture(pet.toObject())));
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+// tasks
+router.get("/:id/tasks", authToken, checkOwnership, async (req, res) => {
+  try {
+    const tasks = await Task.find({ user: req.params.id })
+      .populate({
+        path: "pet",
+        select: "name",
+      })
+      .sort({ date: 1 });
+    res.json(tasks);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+// middlewares
 function checkOwnership(req: Request, res: Response, next: NextFunction) {
   if (req.user?._id !== req.params.id) {
     res.status(403).json({ error: "You can only access your own data" });
