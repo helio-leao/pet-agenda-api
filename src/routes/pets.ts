@@ -126,7 +126,9 @@ router.get(
   checkOwnership,
   async (req, res) => {
     try {
-      const petWeightRecord = await PetWeightRecord.findOne().sort({
+      const petWeightRecord = await PetWeightRecord.findOne({
+        pet: req.params.id,
+      }).sort({
         date: -1,
       });
       res.json(petWeightRecord);
