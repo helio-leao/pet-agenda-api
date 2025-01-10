@@ -111,7 +111,7 @@ router.get("/:id", authToken, checkOwnership, async (req, res) => {
 // tasks
 router.get("/:id/tasks", authToken, checkOwnership, async (req, res) => {
   try {
-    const tasks = await Task.find({ pet: req.params.id });
+    const tasks = await Task.find({ pet: req.params.id }).sort({ date: 1 });
     res.json(tasks);
   } catch (error) {
     console.error(error);

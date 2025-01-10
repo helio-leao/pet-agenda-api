@@ -60,10 +60,12 @@ router.get("/:id/pets", authToken, checkOwnership, async (req, res) => {
 
 router.get("/:id/tasks", authToken, checkOwnership, async (req, res) => {
   try {
-    const tasks = await Task.find({ user: req.params.id }).populate({
-      path: "pet",
-      select: "name",
-    });
+    const tasks = await Task.find({ user: req.params.id })
+      .populate({
+        path: "pet",
+        select: "name",
+      })
+      .sort({ date: 1 });
     res.json(tasks);
   } catch (error) {
     console.error(error);
