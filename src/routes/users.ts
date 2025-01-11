@@ -14,7 +14,7 @@ const upload = multer({ storage });
 
 const router = Router();
 
-router.patch("/:userId", authToken, checkOwnership, async (req, res) => {
+router.patch("/:userId", authToken, checkUserOwnership, async (req, res) => {
   const validation = updateUserSchema.safeParse(req.body);
   if (!validation.success) {
     res.status(400).json({
@@ -51,7 +51,7 @@ router.patch("/:userId", authToken, checkOwnership, async (req, res) => {
 router.post(
   "/:userId/picture",
   authToken,
-  checkOwnership,
+  checkUserOwnership,
   upload.single("picture"),
   async (req, res) => {
     const { file } = req;
@@ -79,7 +79,7 @@ router.post(
   }
 );
 
-router.get("/:userId", authToken, checkOwnership, async (req, res) => {
+router.get("/:userId", authToken, checkUserOwnership, async (req, res) => {
   try {
     const user = await User.findById(req.params.userId);
 
@@ -95,7 +95,7 @@ router.get("/:userId", authToken, checkOwnership, async (req, res) => {
 });
 
 // pets
-router.get("/:userId/pets", authToken, checkOwnership, async (req, res) => {
+router.get("/:userId/pets", authToken, checkUserOwnership, async (req, res) => {
   try {
     const pets = await Pet.find({ user: req.params.userId });
     res.json(pets.map((pet) => transformPicture(pet.toObject())));
@@ -106,23 +106,28 @@ router.get("/:userId/pets", authToken, checkOwnership, async (req, res) => {
 });
 
 // tasks
-router.get("/:userId/tasks", authToken, checkOwnership, async (req, res) => {
-  try {
-    const tasks = await Task.find({ user: req.params.userId })
-      .populate({
-        path: "pet",
-        select: "name",
-      })
-      .sort({ date: 1 });
-    res.json(tasks);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Internal Server Error" });
+router.get(
+  "/:userId/tasks",
+  authToken,
+  checkUserOwnership,
+  async (req, res) => {
+    try {
+      const tasks = await Task.find({ user: req.params.userId })
+        .populate({
+          path: "pet",
+          select: "name",
+        })
+        .sort({ date: 1 });
+      res.json(tasks);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: "Internal Server Error" });
+    }
   }
-});
+);
 
 // middlewares
-function checkOwnership(req: Request, res: Response, next: NextFunction) {
+function checkUserOwnership(req: Request, res: Response, next: NextFunction) {
   if (req.user?._id !== req.params.userId) {
     res.status(403).json({ error: "You can only access your own data" });
     return;

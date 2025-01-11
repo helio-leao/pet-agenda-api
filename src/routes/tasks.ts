@@ -61,7 +61,7 @@ router.post("/", authToken, async (req, res) => {
   }
 });
 
-router.patch("/:taskId", authToken, checkOwnership, async (req, res) => {
+router.patch("/:taskId", authToken, checkTaskOwnership, async (req, res) => {
   const validation = updateTaskSchema.safeParse(req.body);
   if (!validation.success) {
     res.status(400).json({
@@ -92,7 +92,7 @@ router.patch("/:taskId", authToken, checkOwnership, async (req, res) => {
 router.post(
   "/:taskId/add-done-date",
   authToken,
-  checkOwnership,
+  checkTaskOwnership,
   async (req, res) => {
     try {
       const { date } = req.body;
@@ -118,7 +118,7 @@ router.post(
   }
 );
 
-router.get("/:taskId", authToken, checkOwnership, async (req, res) => {
+router.get("/:taskId", authToken, checkTaskOwnership, async (req, res) => {
   try {
     res.json(req.task);
   } catch (error) {
@@ -128,7 +128,11 @@ router.get("/:taskId", authToken, checkOwnership, async (req, res) => {
 });
 
 // middlewares
-async function checkOwnership(req: Request, res: Response, next: NextFunction) {
+async function checkTaskOwnership(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
   try {
     const task = await Task.findById(req.params.taskId);
 
