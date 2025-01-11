@@ -94,35 +94,6 @@ router.patch("/:taskId", authToken, checkTaskOwnership, async (req, res) => {
   }
 });
 
-router.post(
-  "/:taskId/add-done-date",
-  authToken,
-  checkTaskOwnership,
-  async (req, res) => {
-    try {
-      const { date } = req.body;
-
-      if (!date || isNaN(Date.parse(date))) {
-        res.status(400).json({ error: "Invalid date format" });
-        return;
-      }
-
-      req.task.history.push(date);
-      req.task.date = nextDate(
-        req.task.interval,
-        req.task.intervalUnit,
-        new Date(date)
-      );
-
-      const updated = await req.task.save();
-      res.json(updated);
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: "Internal Server Error" });
-    }
-  }
-);
-
 router.get("/:taskId", authToken, checkTaskOwnership, async (req, res) => {
   try {
     res.json(req.task);
@@ -133,6 +104,7 @@ router.get("/:taskId", authToken, checkTaskOwnership, async (req, res) => {
 });
 
 // task done records
+// todo: add task next date update
 router.post(
   "/:taskId/done-records",
   authToken,
@@ -165,6 +137,7 @@ router.post(
   }
 );
 
+// todo: add task next date update
 router.patch(
   "/:taskId/done-records/:doneRecordId",
   authToken,

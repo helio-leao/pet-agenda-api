@@ -27,8 +27,6 @@ export const createTaskSchema = z.object({
         "Interval unit must be one of 'HOURS', 'WEEKS', 'DAYS', 'MONTHS' or 'YEARS'",
     }),
   }),
-
-  history: z.array(z.date()).default([]),
 });
 
 export const updateTaskSchema = createTaskSchema.partial();

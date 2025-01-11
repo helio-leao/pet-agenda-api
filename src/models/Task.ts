@@ -12,8 +12,6 @@ export interface ITask {
     unit: "HOURS" | "DAYS" | "WEEKS" | "MONTHS" | "YEARS";
     value: number;
   };
-
-  history: Date[];
 }
 
 const taskSchema = new mongoose.Schema<ITask>(
@@ -52,11 +50,6 @@ const taskSchema = new mongoose.Schema<ITask>(
         },
       },
       _id: false,
-    },
-
-    history: {
-      type: [Date],
-      default: [],
     },
   },
   {
