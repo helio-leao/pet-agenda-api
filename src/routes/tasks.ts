@@ -23,7 +23,7 @@ router.post("/", authToken, async (req, res) => {
 
   try {
     // verify user ownership
-    if (req.user._id !== req.body.user) {
+    if (req.user?._id !== req.body.user) {
       res.status(403).json({ error: "You can only create tasks for yourself" });
       return;
     }
@@ -35,7 +35,7 @@ router.post("/", authToken, async (req, res) => {
       res.status(404).json({ error: "Pet not found" });
       return;
     }
-    if (req.user._id !== searchedPet.user.toString()) {
+    if (req.user?._id !== searchedPet.user.toString()) {
       res
         .status(403)
         .json({ error: "You can only create tasks for your own pets" });
@@ -127,6 +127,16 @@ router.get("/:taskId", authToken, checkTaskOwnership, async (req, res) => {
   }
 });
 
+// task done records
+// router.post("/:taskId/done-records", authToken, checkTaskOwnership, async (req, res) => {
+//   try {
+//     res.json(req.task);
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ error: "Internal Server Error" });
+//   }
+// });
+
 // middlewares
 async function checkTaskOwnership(
   req: Request,
@@ -140,7 +150,7 @@ async function checkTaskOwnership(
       res.status(404).json({ error: "Task not found" });
       return;
     }
-    if (req.user._id !== task.user.toString()) {
+    if (req.user?._id !== task.user.toString()) {
       res.status(403).json({ error: "You can only access your own tasks" });
       return;
     }

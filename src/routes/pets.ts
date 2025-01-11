@@ -33,7 +33,7 @@ router.post("/", authToken, async (req, res) => {
   const { name, type, breed, birthdate, user } = req.body;
   const newPet = new Pet({ name, type, breed, birthdate, user });
 
-  if (req.user._id !== user) {
+  if (req.user?._id !== user) {
     res.status(403).json({ error: "You can only create pets for yourself" });
     return;
   }
@@ -264,7 +264,7 @@ async function checkPetOwnership(
       res.status(404).json({ error: "Pet not found" });
       return;
     }
-    if (req.user._id !== pet.user.toString()) {
+    if (req.user?._id !== pet.user.toString()) {
       res.status(403).json({ error: "You can only access your own pets" });
       return;
     }
