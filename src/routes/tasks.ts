@@ -194,7 +194,7 @@ router.get(
     try {
       const doneRecords = await TaskDoneRecord.find({
         task: req.params.taskId,
-      });
+      }).sort({ date: -1 });
       res.json(doneRecords);
     } catch (error) {
       console.error(error);
