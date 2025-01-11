@@ -4,6 +4,7 @@ declare namespace Express {
     pet?: PetDocument;
     task?: TaskDocument;
     petWeightRecord?: PetWeightRecord;
+    taskDoneRecord?: TaskDoneRecord;
   }
 }
 
@@ -23,6 +24,13 @@ type PetDocument = Document<unknown, {}, IPetWeightRecord> &
 
 type PetWeightRecord = Document<unknown, {}, IPetWeightRecord> &
   IPetWeightRecord & {
+    _id: Types.ObjectId;
+  } & {
+    __v: number;
+  };
+
+type TaskDoneRecord = Document<unknown, {}, ITaskDoneRecord> &
+  ITaskDoneRecord & {
     _id: Types.ObjectId;
   } & {
     __v: number;

@@ -5,6 +5,11 @@ import { createTaskSchema, updateTaskSchema } from "../schemas/taskSchema";
 import authToken from "../middlewares/authToken";
 import nextDate from "../utils/nextDate";
 import Pet from "../models/Pet";
+import {
+  createTaskDoneRecordSchema,
+  updateTaskDoneRecordSchema,
+} from "../schemas/taskDoneRecordSchema";
+import TaskDoneRecord from "../models/TaskDoneRecord";
 
 const router = Router();
 
@@ -128,14 +133,124 @@ router.get("/:taskId", authToken, checkTaskOwnership, async (req, res) => {
 });
 
 // task done records
-// router.post("/:taskId/done-records", authToken, checkTaskOwnership, async (req, res) => {
-//   try {
-//     res.json(req.task);
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).json({ error: "Internal Server Error" });
-//   }
-// });
+router.post(
+  "/:taskId/done-records",
+  authToken,
+  checkTaskOwnership,
+  async (req, res) => {
+    const validation = createTaskDoneRecordSchema.safeParse(req.body);
+    if (!validation.success) {
+      res.status(400).json({
+        error: "Validation Error",
+        details: validation.error.errors.map((err) => ({
+          path: err.path.join("."),
+          message: err.message,
+        })),
+      });
+      return;
+    }
+
+    try {
+      const { date, task } = req.body;
+      const newTaskDoneRecord = new TaskDoneRecord({
+        date,
+        task,
+      });
+      await newTaskDoneRecord.save();
+      res.json(newTaskDoneRecord);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: "Internal Server Error" });
+    }
+  }
+);
+
+router.patch(
+  "/:taskId/done-records/:doneRecordId",
+  authToken,
+  checkTaskOwnership,
+  checkTaskDoneRecordOwnership,
+  async (req, res) => {
+    const validation = updateTaskDoneRecordSchema.safeParse(req.body);
+    if (!validation.success) {
+      res.status(400).json({
+        error: "Validation Error",
+        details: validation.error.errors.map((err) => ({
+          path: err.path.join("."),
+          message: err.message,
+        })),
+      });
+      return;
+    }
+
+    try {
+      const { date } = req.body;
+
+      if (date) req.taskDoneRecord.date = date;
+
+      const updated = await req.taskDoneRecord.save();
+      res.json(updated);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: "Internal Server Error" });
+    }
+  }
+);
+
+router.delete(
+  "/:taskId/done-records/:doneRecordId",
+  authToken,
+  checkTaskOwnership,
+  checkTaskDoneRecordOwnership,
+  async (req, res) => {
+    try {
+      await req.taskDoneRecord.deleteOne();
+      res.sendStatus(204);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: "Internal Server Error" });
+    }
+  }
+);
+
+router.get(
+  "/:taskId/done-records",
+  authToken,
+  checkTaskOwnership,
+  async (req, res) => {
+    try {
+      const doneRecords = await TaskDoneRecord.find({
+        task: req.params.taskId,
+      });
+      res.json(doneRecords);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: "Internal Server Error" });
+    }
+  }
+);
+
+router.get(
+  "/:taskId/done-records/:doneRecordId",
+  authToken,
+  checkTaskOwnership,
+  checkTaskDoneRecordOwnership,
+  async (req, res) => {
+    try {
+      const doneRecords = await TaskDoneRecord.findById(
+        req.params.doneRecordId
+      );
+      if (!doneRecords) {
+        res.status(404).json({ error: "Record not found" });
+        return;
+      }
+      res.json(doneRecords);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: "Internal Server Error" });
+    }
+  }
+);
 
 // middlewares
 async function checkTaskOwnership(
@@ -155,6 +270,30 @@ async function checkTaskOwnership(
       return;
     }
     req.task = task;
+    next();
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+}
+
+async function checkTaskDoneRecordOwnership(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  try {
+    const doneRecord = await TaskDoneRecord.findById(req.params.doneRecordId);
+
+    if (!doneRecord) {
+      res.status(404).json({ error: "Record not found" });
+      return;
+    }
+    if (req.params.taskId !== doneRecord.task.toString()) {
+      res.status(403).json({ error: "You can only access your own records" });
+      return;
+    }
+    req.taskDoneRecord = doneRecord;
     next();
   } catch (error) {
     console.error(error);
