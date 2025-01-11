@@ -14,7 +14,7 @@ const upload = multer({ storage });
 
 const router = Router();
 
-router.patch("/:id", authToken, checkOwnership, async (req, res) => {
+router.patch("/:userId", authToken, checkOwnership, async (req, res) => {
   const validation = updateUserSchema.safeParse(req.body);
   if (!validation.success) {
     res.status(400).json({
@@ -28,7 +28,7 @@ router.patch("/:id", authToken, checkOwnership, async (req, res) => {
   }
 
   try {
-    const user = await User.findById(req.params.id);
+    const user = await User.findById(req.params.userId);
 
     if (!user) {
       res.status(404).json({ error: "User not found" });
@@ -49,7 +49,7 @@ router.patch("/:id", authToken, checkOwnership, async (req, res) => {
 });
 
 router.post(
-  "/:id/picture",
+  "/:userId/picture",
   authToken,
   checkOwnership,
   upload.single("picture"),
@@ -61,7 +61,7 @@ router.post(
       return;
     }
     try {
-      const user = await User.findById(req.params.id);
+      const user = await User.findById(req.params.userId);
 
       if (!user) {
         res.status(404).json({ error: "User not found" });
@@ -79,9 +79,9 @@ router.post(
   }
 );
 
-router.get("/:id", authToken, checkOwnership, async (req, res) => {
+router.get("/:userId", authToken, checkOwnership, async (req, res) => {
   try {
-    const user = await User.findById(req.params.id);
+    const user = await User.findById(req.params.userId);
 
     if (!user) {
       res.status(404).json({ error: "User not found" });
@@ -95,9 +95,9 @@ router.get("/:id", authToken, checkOwnership, async (req, res) => {
 });
 
 // pets
-router.get("/:id/pets", authToken, checkOwnership, async (req, res) => {
+router.get("/:userId/pets", authToken, checkOwnership, async (req, res) => {
   try {
-    const pets = await Pet.find({ user: req.params.id });
+    const pets = await Pet.find({ user: req.params.userId });
     res.json(pets.map((pet) => transformPicture(pet.toObject())));
   } catch (error) {
     console.error(error);
@@ -106,9 +106,9 @@ router.get("/:id/pets", authToken, checkOwnership, async (req, res) => {
 });
 
 // tasks
-router.get("/:id/tasks", authToken, checkOwnership, async (req, res) => {
+router.get("/:userId/tasks", authToken, checkOwnership, async (req, res) => {
   try {
-    const tasks = await Task.find({ user: req.params.id })
+    const tasks = await Task.find({ user: req.params.userId })
       .populate({
         path: "pet",
         select: "name",
@@ -123,7 +123,7 @@ router.get("/:id/tasks", authToken, checkOwnership, async (req, res) => {
 
 // middlewares
 function checkOwnership(req: Request, res: Response, next: NextFunction) {
-  if (req.user?._id !== req.params.id) {
+  if (req.user?._id !== req.params.userId) {
     res.status(403).json({ error: "You can only access your own data" });
     return;
   }

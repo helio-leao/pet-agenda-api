@@ -61,7 +61,7 @@ router.post("/", authToken, async (req, res) => {
   }
 });
 
-router.patch("/:id", authToken, checkOwnership, async (req, res) => {
+router.patch("/:taskId", authToken, checkOwnership, async (req, res) => {
   const validation = updateTaskSchema.safeParse(req.body);
   if (!validation.success) {
     res.status(400).json({
@@ -90,7 +90,7 @@ router.patch("/:id", authToken, checkOwnership, async (req, res) => {
 });
 
 router.post(
-  "/:id/add-done-date",
+  "/:taskId/add-done-date",
   authToken,
   checkOwnership,
   async (req, res) => {
@@ -118,7 +118,7 @@ router.post(
   }
 );
 
-router.get("/:id", authToken, checkOwnership, async (req, res) => {
+router.get("/:taskId", authToken, checkOwnership, async (req, res) => {
   try {
     res.json(req.task);
   } catch (error) {
@@ -130,7 +130,7 @@ router.get("/:id", authToken, checkOwnership, async (req, res) => {
 // middlewares
 async function checkOwnership(req: Request, res: Response, next: NextFunction) {
   try {
-    const task = await Task.findById(req.params.id);
+    const task = await Task.findById(req.params.taskId);
 
     if (!task) {
       res.status(404).json({ error: "Task not found" });

@@ -48,7 +48,7 @@ router.post("/", authToken, async (req, res) => {
 });
 
 router.post(
-  "/:id/picture",
+  "/:petId/picture",
   authToken,
   checkPetOwnership,
   upload.single("picture"),
@@ -71,7 +71,7 @@ router.post(
   }
 );
 
-router.patch("/:id", authToken, checkPetOwnership, async (req, res) => {
+router.patch("/:petId", authToken, checkPetOwnership, async (req, res) => {
   const validation = updatePetSchema.safeParse(req.body);
   if (!validation.success) {
     res.status(400).json({
@@ -99,7 +99,7 @@ router.patch("/:id", authToken, checkPetOwnership, async (req, res) => {
   }
 });
 
-router.get("/:id", authToken, checkPetOwnership, async (req, res) => {
+router.get("/:petId", authToken, checkPetOwnership, async (req, res) => {
   try {
     res.json(transformPicture(req.pet.toObject()));
   } catch (error) {
@@ -109,9 +109,9 @@ router.get("/:id", authToken, checkPetOwnership, async (req, res) => {
 });
 
 // tasks
-router.get("/:id/tasks", authToken, checkPetOwnership, async (req, res) => {
+router.get("/:petId/tasks", authToken, checkPetOwnership, async (req, res) => {
   try {
-    const tasks = await Task.find({ pet: req.params.id }).sort({ date: 1 });
+    const tasks = await Task.find({ pet: req.params.petId }).sort({ date: 1 });
     res.json(tasks);
   } catch (error) {
     console.error(error);
@@ -121,13 +121,13 @@ router.get("/:id/tasks", authToken, checkPetOwnership, async (req, res) => {
 
 // pet weight records
 router.get(
-  "/:id/weight-records/latest",
+  "/:petId/weight-records/latest",
   authToken,
   checkPetOwnership,
   async (req, res) => {
     try {
       const weightRecord = await PetWeightRecord.findOne({
-        pet: req.params.id,
+        pet: req.params.petId,
       }).sort({
         date: -1,
       });
@@ -140,13 +140,13 @@ router.get(
 );
 
 router.get(
-  "/:id/weight-records",
+  "/:petId/weight-records",
   authToken,
   checkPetOwnership,
   async (req, res) => {
     try {
       const weightRecords = await PetWeightRecord.find({
-        pet: req.params.id,
+        pet: req.params.petId,
       }).sort({ date: -1 });
 
       res.json(weightRecords);
@@ -158,7 +158,7 @@ router.get(
 );
 
 router.post(
-  "/:id/weight-records",
+  "/:petId/weight-records",
   authToken,
   checkPetOwnership,
   async (req, res) => {
@@ -188,7 +188,7 @@ router.post(
 );
 
 router.patch(
-  "/:id/weight-records/:recordId",
+  "/:petId/weight-records/:recordId",
   authToken,
   checkPetOwnership,
   checkWeightRecordOwnership,
@@ -220,7 +220,7 @@ router.patch(
 );
 
 router.get(
-  "/:id/weight-records/:recordId",
+  "/:petId/weight-records/:recordId",
   authToken,
   checkPetOwnership,
   checkWeightRecordOwnership,
@@ -236,7 +236,7 @@ router.get(
 );
 
 router.delete(
-  "/:id/weight-records/:recordId",
+  "/:petId/weight-records/:recordId",
   authToken,
   checkPetOwnership,
   checkWeightRecordOwnership,
@@ -258,7 +258,7 @@ async function checkPetOwnership(
   next: NextFunction
 ) {
   try {
-    const pet = await Pet.findById(req.params.id);
+    const pet = await Pet.findById(req.params.petId);
 
     if (!pet) {
       res.status(404).json({ error: "Pet not found" });
@@ -288,7 +288,7 @@ async function checkWeightRecordOwnership(
       res.status(404).json({ error: "Weight record not found" });
       return;
     }
-    if (weightRecord.pet.toString() !== req.params.id) {
+    if (weightRecord.pet.toString() !== req.params.petId) {
       res.status(404).json({ error: "Weight record not found for this pet" });
       return;
     }
