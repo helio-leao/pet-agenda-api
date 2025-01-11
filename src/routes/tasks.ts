@@ -237,14 +237,7 @@ router.get(
   checkTaskDoneRecordOwnership,
   async (req, res) => {
     try {
-      const doneRecords = await TaskDoneRecord.findById(
-        req.params.doneRecordId
-      );
-      if (!doneRecords) {
-        res.status(404).json({ error: "Record not found" });
-        return;
-      }
-      res.json(doneRecords);
+      res.json(req.taskDoneRecord);
     } catch (error) {
       console.error(error);
       res.status(500).json({ error: "Internal Server Error" });
