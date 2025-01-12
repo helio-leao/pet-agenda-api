@@ -210,6 +210,7 @@ router.get(
   checkTaskDoneRecordOwnership,
   async (req, res) => {
     try {
+      // issue: req already has a task on it. populate is redundant...
       await req.taskDoneRecord.populate({ path: "task", select: "title" });
       res.json(req.taskDoneRecord);
     } catch (error) {
