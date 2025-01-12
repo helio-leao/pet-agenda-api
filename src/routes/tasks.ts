@@ -210,6 +210,7 @@ router.get(
   checkTaskDoneRecordOwnership,
   async (req, res) => {
     try {
+      await req.taskDoneRecord.populate("task");
       res.json(req.taskDoneRecord);
     } catch (error) {
       console.error(error);
