@@ -8,8 +8,13 @@ import { updateUserSchema } from "../schemas/userSchema";
 import transformPicture from "../utils/transformPicture";
 import bcrypt from "bcrypt";
 import authToken from "../middlewares/authToken";
+import cloudinary from "../config/cloudinary";
 
-const storage = multer.memoryStorage();
+const storage = multer.diskStorage({
+  filename: function (_req, file, cb) {
+    cb(null, file.originalname);
+  },
+});
 const upload = multer({ storage });
 
 const router = Router();
@@ -67,11 +72,18 @@ router.post(
         res.status(404).json({ error: "User not found" });
         return;
       }
-      user.picture.buffer = file.buffer;
-      user.picture.contentType = file.mimetype;
-      const updated = await user.save();
 
-      res.json(transformPicture(updated.toObject()));
+      const result = await cloudinary.uploader.upload(file.path, {
+        public_id: user._id.toString(),
+        overwrite: true,
+        resource_type: "image",
+        folder: "pet_agenda/user_picture",
+      });
+
+      user.pictureUrl = result.secure_url;
+
+      await user.save();
+      res.json(user);
     } catch (error) {
       console.error(error);
       res.status(500).json({ error: "Internal Server Error" });

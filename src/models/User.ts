@@ -5,10 +5,7 @@ export interface IUser {
   username: string;
   password: string;
   email: string;
-  picture: {
-    buffer: Buffer;
-    contentType: string;
-  };
+  pictureUrl: string;
   verified: boolean;
 }
 
@@ -33,9 +30,8 @@ const userSchema = new mongoose.Schema<IUser>(
       required: true,
       unique: true,
     },
-    picture: {
-      buffer: Buffer,
-      contentType: String,
+    pictureUrl: {
+      type: String,
     },
     verified: {
       type: Boolean,
