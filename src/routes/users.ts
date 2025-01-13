@@ -5,7 +5,6 @@ import multer from "multer";
 import Pet from "../models/Pet";
 import Task from "../models/Task";
 import { updateUserSchema } from "../schemas/userSchema";
-import transformPicture from "../utils/transformPicture";
 import bcrypt from "bcrypt";
 import authToken from "../middlewares/authToken";
 import cloudinary from "../config/cloudinary";
@@ -46,13 +45,14 @@ router.patch("/:userId", authToken, checkUserOwnership, async (req, res) => {
     // if (email != undefined) user.email = email;
 
     const updated = await user.save();
-    res.json(transformPicture(updated.toObject()));
+    res.json(updated);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
 
+// issue: verify the need for user find. compare it to POST pet/:id/picture
 router.post(
   "/:userId/picture",
   authToken,
@@ -77,7 +77,7 @@ router.post(
         public_id: user._id.toString(),
         overwrite: true,
         resource_type: "image",
-        folder: "pet_agenda/user_picture",
+        folder: `pet_agenda/users_pictures`,
       });
 
       user.pictureUrl = result.secure_url;
@@ -99,7 +99,7 @@ router.get("/:userId", authToken, checkUserOwnership, async (req, res) => {
       res.status(404).json({ error: "User not found" });
       return;
     }
-    res.json(transformPicture(user.toObject()));
+    res.json(user);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Internal Server Error" });
@@ -110,7 +110,7 @@ router.get("/:userId", authToken, checkUserOwnership, async (req, res) => {
 router.get("/:userId/pets", authToken, checkUserOwnership, async (req, res) => {
   try {
     const pets = await Pet.find({ user: req.params.userId });
-    res.json(pets.map((pet) => transformPicture(pet.toObject())));
+    res.json(pets);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Internal Server Error" });

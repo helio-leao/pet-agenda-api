@@ -5,10 +5,7 @@ export interface IPet {
   type: string;
   breed: string;
   birthdate: Date;
-  picture: {
-    buffer: Buffer;
-    contentType: string;
-  };
+  pictureUrl: string;
   user: Types.ObjectId;
 }
 
@@ -30,9 +27,8 @@ const petSchema = new mongoose.Schema<IPet>(
       type: Date,
       required: true,
     },
-    picture: {
-      buffer: Buffer,
-      contentType: String,
+    pictureUrl: {
+      type: String,
     },
     user: {
       type: mongoose.SchemaTypes.ObjectId,

@@ -8,11 +8,15 @@ import {
   createPetWeightRecordSchema,
   updatePetWeightRecordSchema,
 } from "../schemas/petWeightRecordSchema";
-import transformPicture from "../utils/transformPicture";
 import authToken from "../middlewares/authToken";
 import PetWeightRecord from "../models/PetWeightRecord";
+import cloudinary from "../config/cloudinary";
 
-const storage = multer.memoryStorage();
+const storage = multer.diskStorage({
+  filename: function (_req, file, cb) {
+    cb(null, file.originalname);
+  },
+});
 const upload = multer({ storage });
 
 const router = Router();
@@ -60,10 +64,15 @@ router.post(
       return;
     }
     try {
-      req.pet.picture.buffer = file.buffer;
-      req.pet.picture.contentType = file.mimetype;
+      const result = await cloudinary.uploader.upload(file.path, {
+        public_id: req.pet._id.toString(),
+        overwrite: true,
+        resource_type: "image",
+        folder: "pet_agenda/pets_pictures",
+      });
+      req.pet.pictureUrl = result.secure_url;
       const updated = await req.pet.save();
-      res.json(transformPicture(updated.toObject()));
+      res.json(updated);
     } catch (error) {
       console.error(error);
       res.status(500).json({ error: "Internal Server Error" });
@@ -92,7 +101,7 @@ router.patch("/:petId", authToken, checkPetOwnership, async (req, res) => {
     if (birthdate != undefined) req.pet.birthdate = birthdate;
 
     const updated = await req.pet.save();
-    res.json(transformPicture(updated.toObject()));
+    res.json(updated);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Internal Server Error" });
@@ -101,7 +110,7 @@ router.patch("/:petId", authToken, checkPetOwnership, async (req, res) => {
 
 router.get("/:petId", authToken, checkPetOwnership, async (req, res) => {
   try {
-    res.json(transformPicture(req.pet.toObject()));
+    res.json(req.pet);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Internal Server Error" });
