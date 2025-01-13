@@ -10,7 +10,7 @@ import {
 import authToken from "../middlewares/authToken";
 import PetWeightRecord from "../models/PetWeightRecord";
 import cloudinary from "../config/cloudinary";
-import upload from "../middlewares/multerUpload";
+import upload from "../middlewares/upload";
 
 const router = Router();
 

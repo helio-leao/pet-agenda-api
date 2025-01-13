@@ -7,7 +7,7 @@ import { updateUserSchema } from "../schemas/userSchema";
 import bcrypt from "bcrypt";
 import authToken from "../middlewares/authToken";
 import cloudinary from "../config/cloudinary";
-import upload from "../middlewares/multerUpload";
+import upload from "../middlewares/upload";
 
 const router = Router();
 
