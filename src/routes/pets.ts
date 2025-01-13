@@ -1,7 +1,6 @@
 import { Router } from "express";
 import { NextFunction, Request, Response } from "express";
 import Pet from "../models/Pet";
-import multer from "multer";
 import Task from "../models/Task";
 import { createPetSchema, updatePetSchema } from "../schemas/petSchema";
 import {
@@ -11,13 +10,7 @@ import {
 import authToken from "../middlewares/authToken";
 import PetWeightRecord from "../models/PetWeightRecord";
 import cloudinary from "../config/cloudinary";
-
-const storage = multer.diskStorage({
-  filename: function (_req, file, cb) {
-    cb(null, file.originalname);
-  },
-});
-const upload = multer({ storage });
+import upload from "../middlewares/multerUpload";
 
 const router = Router();
 

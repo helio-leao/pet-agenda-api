@@ -1,20 +1,13 @@
 import { Router } from "express";
 import { NextFunction, Request, Response } from "express";
 import User from "../models/User";
-import multer from "multer";
 import Pet from "../models/Pet";
 import Task from "../models/Task";
 import { updateUserSchema } from "../schemas/userSchema";
 import bcrypt from "bcrypt";
 import authToken from "../middlewares/authToken";
 import cloudinary from "../config/cloudinary";
-
-const storage = multer.diskStorage({
-  filename: function (_req, file, cb) {
-    cb(null, file.originalname);
-  },
-});
-const upload = multer({ storage });
+import upload from "../middlewares/multerUpload";
 
 const router = Router();
 
