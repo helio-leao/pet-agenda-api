@@ -122,9 +122,9 @@ router.post(
     }
 
     try {
-      const { dueDate, task } = req.body;
+      const { date, task } = req.body;
       const newTaskDoneRecord = new TaskDoneRecord({
-        dueDate,
+        date,
         task,
       });
       await newTaskDoneRecord.save();
@@ -133,7 +133,7 @@ router.post(
       req.task.dueDate = nextDate(
         req.task.interval.value,
         req.task.interval.unit,
-        new Date(dueDate)
+        new Date(date)
       );
       await req.task.save();
 
@@ -145,7 +145,7 @@ router.post(
   }
 );
 
-// note: update done record does not update task due dueDate
+// note: update done record does not update task dueDate
 router.patch(
   "/:taskId/done-records/:doneRecordId",
   authToken,
