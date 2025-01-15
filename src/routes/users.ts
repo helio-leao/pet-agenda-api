@@ -31,6 +31,7 @@ router.patch("/:userId", authToken, checkUserOwnership, async (req, res) => {
       res.status(404).json({ error: "User not found" });
       return;
     }
+
     const { name, password, username, email } = req.body;
     if (name != undefined) user.name = name;
     if (password != undefined) user.password = await bcrypt.hash(password, 10);

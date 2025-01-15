@@ -86,13 +86,13 @@ router.patch("/:petId", authToken, checkPetOwnership, async (req, res) => {
     return;
   }
 
-  try {
-    const { name, type, breed, birthdate } = req.body;
-    if (name != undefined) req.pet.name = name;
-    if (type != undefined) req.pet.type = type;
-    if (breed != undefined) req.pet.breed = breed;
-    if (birthdate != undefined) req.pet.birthdate = birthdate;
+  const { name, type, breed, birthdate } = req.body;
+  if (name != undefined) req.pet.name = name;
+  if (type != undefined) req.pet.type = type;
+  if (breed != undefined) req.pet.breed = breed;
+  if (birthdate != undefined) req.pet.birthdate = birthdate;
 
+  try {
     const updated = await req.pet.save();
     res.json(updated);
   } catch (error) {
@@ -208,12 +208,12 @@ router.patch(
       });
       return;
     }
+
+    const { value, date } = req.body;
+    if (value != undefined) req.petWeightRecord.value = value;
+    if (date != undefined) req.petWeightRecord.date = date;
+
     try {
-      const { value, date } = req.body;
-
-      if (value != undefined) req.petWeightRecord.value = value;
-      if (date != undefined) req.petWeightRecord.date = date;
-
       const updated = await req.petWeightRecord.save();
       res.json(updated);
     } catch (error) {

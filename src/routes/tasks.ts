@@ -80,13 +80,13 @@ router.patch("/:taskId", authToken, checkTaskOwnership, async (req, res) => {
     return;
   }
 
-  try {
-    const { title, description, dueDate, interval } = req.body;
-    if (title != undefined) req.task.title = title;
-    if (description != undefined) req.task.description = description;
-    if (dueDate != undefined) req.task.dueDate = dueDate;
-    if (interval !== undefined) req.task.interval = interval;
+  const { title, description, dueDate, interval } = req.body;
+  if (title != undefined) req.task.title = title;
+  if (description != undefined) req.task.description = description;
+  if (dueDate != undefined) req.task.dueDate = dueDate;
+  if (interval !== undefined) req.task.interval = interval;
 
+  try {
     const updated = await req.task.save();
     res.json(updated);
   } catch (error) {
