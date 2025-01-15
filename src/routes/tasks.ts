@@ -10,6 +10,7 @@ import {
   updateTaskDoneRecordSchema,
 } from "../schemas/taskDoneRecordSchema";
 import TaskDoneRecord from "../models/TaskDoneRecord";
+import mongoose from "mongoose";
 
 const router = Router();
 
@@ -121,13 +122,17 @@ router.post(
       return;
     }
 
+    const session = await mongoose.startSession();
+
     try {
+      session.startTransaction();
+
       const { date, task } = req.body;
       const newTaskDoneRecord = new TaskDoneRecord({
         date,
         task,
       });
-      await newTaskDoneRecord.save();
+      await newTaskDoneRecord.save({ session });
 
       // update dueDate on task document
       req.task.dueDate = nextDate(
@@ -135,12 +140,16 @@ router.post(
         req.task.interval.unit,
         new Date(date)
       );
-      await req.task.save();
+      await req.task.save({ session });
 
+      await session.commitTransaction();
       res.json(newTaskDoneRecord);
     } catch (error) {
       console.error(error);
+      await session.abortTransaction();
       res.status(500).json({ error: "Internal Server Error" });
+    } finally {
+      session.endSession();
     }
   }
 );
