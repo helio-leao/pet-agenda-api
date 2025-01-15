@@ -104,7 +104,6 @@ router.get("/:taskId", authToken, checkTaskOwnership, async (req, res) => {
 });
 
 // task done records
-// todo: add task next date update
 router.post(
   "/:taskId/done-records",
   authToken,
@@ -129,6 +128,15 @@ router.post(
         task,
       });
       await newTaskDoneRecord.save();
+
+      // update date on task document
+      req.task.date = nextDate(
+        req.task.interval.value,
+        req.task.interval.unit,
+        new Date(date)
+      );
+      await req.task.save();
+
       res.json(newTaskDoneRecord);
     } catch (error) {
       console.error(error);
@@ -137,7 +145,7 @@ router.post(
   }
 );
 
-// todo: add task next date update
+// note: update done record does not update task due date
 router.patch(
   "/:taskId/done-records/:doneRecordId",
   authToken,
@@ -155,12 +163,14 @@ router.patch(
       });
       return;
     }
-
     try {
       const { date } = req.body;
 
-      if (date) req.taskDoneRecord.date = date;
-
+      if (!date) {
+        res.status(400).json({ error: "Date is required" });
+        return;
+      }
+      req.taskDoneRecord.date = date;
       const updated = await req.taskDoneRecord.save();
       res.json(updated);
     } catch (error) {
