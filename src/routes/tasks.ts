@@ -166,11 +166,8 @@ router.patch(
     try {
       const { date } = req.body;
 
-      if (!date) {
-        res.status(400).json({ error: "Date is required" });
-        return;
-      }
-      req.taskDoneRecord.date = date;
+      if (date) req.taskDoneRecord.date = date;
+
       const updated = await req.taskDoneRecord.save();
       res.json(updated);
     } catch (error) {
