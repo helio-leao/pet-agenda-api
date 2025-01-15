@@ -13,7 +13,7 @@ export const createTaskSchema = z.object({
     .max(500, { message: "Description cannot exceed 50 characters" })
     .optional()
     .or(z.literal("")),
-  date: z.string().refine((date) => !isNaN(Date.parse(date)), {
+  dueDate: z.string().refine((date) => !isNaN(Date.parse(date)), {
     message: "Date must be a valid ISO date string",
   }),
 

@@ -113,7 +113,9 @@ router.get("/:petId", authToken, checkPetOwnership, async (req, res) => {
 // tasks
 router.get("/:petId/tasks", authToken, checkPetOwnership, async (req, res) => {
   try {
-    const tasks = await Task.find({ pet: req.params.petId }).sort({ date: 1 });
+    const tasks = await Task.find({ pet: req.params.petId }).sort({
+      dueDate: 1,
+    });
     res.json(tasks);
   } catch (error) {
     console.error(error);

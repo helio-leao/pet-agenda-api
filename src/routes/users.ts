@@ -122,7 +122,7 @@ router.get(
           path: "pet",
           select: "name",
         })
-        .sort({ date: 1 });
+        .sort({ dueDate: 1 });
       res.json(tasks);
     } catch (error) {
       console.error(error);

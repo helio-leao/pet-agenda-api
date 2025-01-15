@@ -6,7 +6,7 @@ export interface ITask {
 
   title: string;
   description: string;
-  date: Date;
+  dueDate: Date;
 
   interval: {
     unit: "HOURS" | "DAYS" | "WEEKS" | "MONTHS" | "YEARS";
@@ -34,7 +34,7 @@ const taskSchema = new mongoose.Schema<ITask>(
     description: {
       type: String,
     },
-    date: {
+    dueDate: {
       type: Date,
       required: true,
     },

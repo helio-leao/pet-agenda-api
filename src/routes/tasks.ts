@@ -48,11 +48,11 @@ router.post("/", authToken, async (req, res) => {
     }
 
     // creates new task
-    const { title, description, date, user, pet, interval } = req.body;
+    const { title, description, dueDate, user, pet, interval } = req.body;
     const newTask = new Task({
       title,
       description,
-      date,
+      dueDate,
       user,
       pet,
       interval,
@@ -80,10 +80,10 @@ router.patch("/:taskId", authToken, checkTaskOwnership, async (req, res) => {
   }
 
   try {
-    const { title, description, date, interval } = req.body;
+    const { title, description, dueDate, interval } = req.body;
     if (title != undefined) req.task.title = title;
     if (description != undefined) req.task.description = description;
-    if (date != undefined) req.task.date = date;
+    if (dueDate != undefined) req.task.dueDate = dueDate;
     if (interval !== undefined) req.task.interval = interval;
 
     const updated = await req.task.save();
@@ -122,18 +122,18 @@ router.post(
     }
 
     try {
-      const { date, task } = req.body;
+      const { dueDate, task } = req.body;
       const newTaskDoneRecord = new TaskDoneRecord({
-        date,
+        dueDate,
         task,
       });
       await newTaskDoneRecord.save();
 
-      // update date on task document
-      req.task.date = nextDate(
+      // update dueDate on task document
+      req.task.dueDate = nextDate(
         req.task.interval.value,
         req.task.interval.unit,
-        new Date(date)
+        new Date(dueDate)
       );
       await req.task.save();
 
@@ -145,7 +145,7 @@ router.post(
   }
 );
 
-// note: update done record does not update task due date
+// note: update done record does not update task due dueDate
 router.patch(
   "/:taskId/done-records/:doneRecordId",
   authToken,
@@ -164,9 +164,9 @@ router.patch(
       return;
     }
     try {
-      const { date } = req.body;
+      const { dueDate } = req.body;
 
-      if (date) req.taskDoneRecord.date = date;
+      if (dueDate) req.taskDoneRecord.dueDate = dueDate;
 
       const updated = await req.taskDoneRecord.save();
       res.json(updated);
@@ -201,7 +201,7 @@ router.get(
     try {
       const doneRecords = await TaskDoneRecord.find({
         task: req.params.taskId,
-      }).sort({ date: -1 });
+      }).sort({ dueDate: -1 });
       res.json(doneRecords);
     } catch (error) {
       console.error(error);
