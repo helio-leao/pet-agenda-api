@@ -1,29 +1,32 @@
+import { DateTime } from "luxon";
+
 export default function nextDate(
   interval: number,
   intervalUnit: string,
   currentDate: Date
-) {
-  let intervalInMilliseconds = 0;
+): Date {
+  const dateTime = DateTime.fromJSDate(currentDate);
 
+  let newDateTime: DateTime;
   switch (intervalUnit) {
     case "HOURS":
-      intervalInMilliseconds = interval * 1000 * 60 * 60;
+      newDateTime = dateTime.plus({ hours: interval });
       break;
     case "DAYS":
-      intervalInMilliseconds = interval * 1000 * 60 * 60 * 24;
+      newDateTime = dateTime.plus({ days: interval });
       break;
     case "WEEKS":
-      intervalInMilliseconds = interval * 1000 * 60 * 60 * 24 * 7;
+      newDateTime = dateTime.plus({ weeks: interval });
       break;
     case "MONTHS":
-      intervalInMilliseconds = interval * 1000 * 60 * 60 * 24 * 30; // 30 days month
+      newDateTime = dateTime.plus({ months: interval });
       break;
     case "YEARS":
-      intervalInMilliseconds = interval * 1000 * 60 * 60 * 24 * 365; // 365 days year
+      newDateTime = dateTime.plus({ years: interval });
       break;
     default:
       throw new Error(`Unsupported interval unit: ${intervalUnit}`);
   }
 
-  return new Date(currentDate.getTime() + intervalInMilliseconds);
+  return newDateTime.toJSDate();
 }
