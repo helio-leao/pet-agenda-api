@@ -138,7 +138,7 @@ router.post(
       req.task.dueDate = nextDate(
         req.task.interval.value,
         req.task.interval.unit,
-        new Date(date)
+        date
       );
       await req.task.save({ session });
 

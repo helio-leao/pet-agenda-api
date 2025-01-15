@@ -3,9 +3,13 @@ import { DateTime } from "luxon";
 export default function nextDate(
   interval: number,
   intervalUnit: string,
-  currentDate: Date
+  currentDate: Date | string | number
 ): Date {
-  const dateTime = DateTime.fromJSDate(currentDate);
+  const dateTime = DateTime.fromJSDate(
+    typeof currentDate === "string" || typeof currentDate === "number"
+      ? new Date(currentDate)
+      : currentDate
+  );
 
   let newDateTime: DateTime;
   switch (intervalUnit) {
