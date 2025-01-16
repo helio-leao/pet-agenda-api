@@ -173,9 +173,9 @@ router.patch(
       return;
     }
     try {
-      const { dueDate } = req.body;
+      const { date } = req.body;
 
-      if (dueDate) req.taskDoneRecord.dueDate = dueDate;
+      if (date) req.taskDoneRecord.date = date;
 
       const updated = await req.taskDoneRecord.save();
       res.json(updated);
