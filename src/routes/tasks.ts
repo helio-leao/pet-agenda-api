@@ -227,7 +227,7 @@ router.get(
   async (req, res) => {
     try {
       // issue: req already has a task on it. populate is redundant...
-      await req.taskDoneRecord.populate({ path: "task", select: "title" });
+      await req.taskDoneRecord.populate("task");
       res.json(req.taskDoneRecord);
     } catch (error) {
       console.error(error);
