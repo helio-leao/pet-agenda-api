@@ -97,6 +97,7 @@ router.patch("/:taskId", authToken, checkTaskOwnership, async (req, res) => {
 
 router.get("/:taskId", authToken, checkTaskOwnership, async (req, res) => {
   try {
+    await req.task.populate("pet");
     res.json(req.task);
   } catch (error) {
     console.error(error);
