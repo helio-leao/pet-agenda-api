@@ -104,6 +104,26 @@ router.get("/:taskId", authToken, checkTaskOwnership, async (req, res) => {
   }
 });
 
+router.delete("/:taskId", authToken, checkTaskOwnership, async (req, res) => {
+  const { task } = req;
+
+  const session = await mongoose.startSession();
+
+  try {
+    session.startTransaction();
+    await task.deleteOne({ session });
+    await TaskDoneRecord.deleteMany({ task: task._id }, { session });
+    await session.commitTransaction();
+    res.sendStatus(204);
+  } catch (error) {
+    session.abortTransaction();
+    console.error(error);
+    res.status(500).json({ error: "Internal Server Error" });
+  } finally {
+    session.endSession();
+  }
+});
+
 // task done records
 router.post(
   "/:taskId/done-records",
